@@ -1,4 +1,4 @@
-<lov-codelov-code>
+
 import { useEffect, useState } from 'react';
 import { QuizInstructions, QuizQuestion as QuestionType } from '@/lib/types';
 import { useQuiz } from '@/hooks/useQuiz';
@@ -10,6 +10,7 @@ import QuizForm from './QuizForm';
 import FullScreenAlert from './FullScreenAlert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 // Sample quiz data (in a real app this would come from Supabase)
 const sampleInstructions: QuizInstructions = {
@@ -80,6 +81,13 @@ const sampleQuestions: QuestionType[] = [
 ];
 
 const Quiz = () => {
+  const [quizData, setQuizData] = useState<{ instructions: QuizInstructions, questions: QuestionType[] }>({
+    instructions: sampleInstructions,
+    questions: sampleQuestions
+  });
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [quizError, setQuizError] = useState<string | null>(null);
+
   const {
     quizState,
     userInfo,
@@ -91,7 +99,7 @@ const Quiz = () => {
     submitQuiz,
     formatTimeRemaining,
     handleCheatingDetected
-  } = useQuiz(sampleInstructions, sampleQuestions);
+  } = useQuiz(quizData.instructions, quizData.questions);
 
   const {
     isFullScreen,
@@ -102,6 +110,133 @@ const Quiz = () => {
   } = useFullScreen(handleCheatingDetected);
   
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  // Fetch quiz from Supabase if quiz code is provided
+  const fetchQuiz = async (quizCode: string) => {
+    try {
+      setQuizLoading(true);
+      setQuizError(null);
+      
+      // Get quiz info
+      const { data: quizData, error: quizError } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('code', quizCode)
+        .single();
+      
+      if (quizError) throw new Error(quizError.message);
+      if (!quizData) throw new Error('Quiz not found');
+      
+      // Get sections for the quiz
+      const { data: sectionsData, error: sectionsError } = await supabase
+        .from('sections')
+        .select('*')
+        .eq('quiz_id', quizData.id)
+        .order('display_order');
+      
+      if (sectionsError) throw new Error(sectionsError.message);
+      
+      // Get questions for each section
+      let allQuestions: QuestionType[] = [];
+      
+      for (const section of sectionsData) {
+        const { data: questionsData, error: questionsError } = await supabase
+          .from('questions')
+          .select('*')
+          .eq('section_id', section.id)
+          .order('display_order');
+          
+        if (questionsError) throw new Error(questionsError.message);
+        
+        // Get options for each question
+        for (const question of questionsData) {
+          const { data: optionsData, error: optionsError } = await supabase
+            .from('options')
+            .select('*')
+            .eq('question_id', question.id)
+            .order('display_order');
+            
+          if (optionsError) throw new Error(optionsError.message);
+          
+          // Transform to match our app's structure
+          allQuestions.push({
+            id: question.id,
+            text: question.text,
+            options: optionsData.map(option => ({
+              id: option.id,
+              text: option.text,
+              isCorrect: option.is_correct
+            }))
+          });
+        }
+      }
+      
+      // Randomize the order of options for each question
+      allQuestions = allQuestions.map(question => ({
+        ...question,
+        options: [...question.options].sort(() => Math.random() - 0.5)
+      }));
+      
+      // Set quiz data
+      setQuizData({
+        instructions: {
+          title: quizData.title,
+          description: quizData.instructions || '',
+          duration: quizData.duration,
+          totalQuestions: allQuestions.length,
+          additionalInfo: []
+        },
+        questions: allQuestions
+      });
+      
+      setQuizLoading(false);
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+      setQuizError(error instanceof Error ? error.message : 'Failed to load quiz');
+      setQuizLoading(false);
+    }
+  };
+
+  // Save quiz result to Supabase
+  const saveQuizResult = async () => {
+    if (!userInfo || !quizState.isCompleted) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('student_results')
+        .insert({
+          name: userInfo.name,
+          email: userInfo.email,
+          prn: userInfo.prn,
+          division: userInfo.division,
+          quiz_id: (await supabase.from('quizzes').select('id').eq('code', userInfo.quizCode).single()).data?.id,
+          marks_scored: quizState.score || 0,
+          total_marks: quizState.questions.length,
+          cheating_status: quizState.isCheating ? 'caught-cheating' : 'no-issues'
+        });
+        
+      if (error) {
+        console.error('Error saving quiz result:', error);
+      }
+    } catch (error) {
+      console.error('Error saving quiz result:', error);
+    }
+  };
+
+  // Handle user registration and fetch quiz
+  const handleUserRegistration = (userData: typeof userInfo) => {
+    setUser(userData);
+    if (userData?.quizCode) {
+      fetchQuiz(userData.quizCode);
+    }
+  };
+
+  // Save results when quiz is completed
+  useEffect(() => {
+    if (quizState.isCompleted) {
+      saveQuizResult();
+    }
+  }, [quizState.isCompleted]);
 
   // Request fullscreen when quiz starts
   useEffect(() => {
@@ -132,9 +267,19 @@ const Quiz = () => {
 
   // Determine which component to render based on quiz state
   const renderContent = () => {
+    // If quiz is loading
+    if (quizLoading) {
+      return <div className="flex justify-center items-center py-10">Loading quiz...</div>;
+    }
+    
+    // If there was an error loading the quiz
+    if (quizError) {
+      return <div className="text-quiz-red p-4 border border-quiz-red rounded-md">{quizError}</div>;
+    }
+    
     // If user hasn't registered
     if (!userInfo) {
-      return <QuizForm onSubmit={setUser} />;
+      return <QuizForm onSubmit={handleUserRegistration} />;
     }
     
     // If quiz is completed, show results
@@ -155,7 +300,7 @@ const Quiz = () => {
     if (!quizState.isStarted) {
       return (
         <Instructions
-          instructions={sampleInstructions}
+          instructions={quizData.instructions}
           userInfo={userInfo}
           onStart={startQuiz}
         />
@@ -169,7 +314,7 @@ const Quiz = () => {
     return (
       <div className="w-full space-y-6">
         <div className="flex justify-center mb-4">
-          <div className="timer-display">
+          <div className="timer-display px-4 py-2 bg-white shadow rounded-full flex items-center text-quiz-red">
             <Clock className="h-4 w-4 mr-1" />
             <span>{formatTimeRemaining()}</span>
           </div>
