@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { QuizInstructions, QuizQuestion as QuestionType } from '@/lib/types';
 import { useQuiz } from '@/hooks/useQuiz';
@@ -12,7 +11,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-// Sample quiz data (in a real app this would come from Supabase)
 const sampleInstructions: QuizInstructions = {
   title: "Web Development Fundamentals Quiz",
   description: "This quiz tests your knowledge of fundamental web development concepts including HTML, CSS, and JavaScript. Answer all questions to the best of your ability.",
@@ -26,7 +24,6 @@ const sampleInstructions: QuizInstructions = {
   ]
 };
 
-// Sample questions
 const sampleQuestions: QuestionType[] = [
   {
     id: "q1",
@@ -82,8 +79,14 @@ const sampleQuestions: QuestionType[] = [
 
 const Quiz = () => {
   const [quizData, setQuizData] = useState<{ instructions: QuizInstructions, questions: QuestionType[] }>({
-    instructions: sampleInstructions,
-    questions: sampleQuestions
+    instructions: {
+      title: "",
+      description: "",
+      duration: 30,
+      totalQuestions: 0,
+      additionalInfo: []
+    },
+    questions: []
   });
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState<string | null>(null);
@@ -111,13 +114,11 @@ const Quiz = () => {
   
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  // Fetch quiz from Supabase if quiz code is provided
   const fetchQuiz = async (quizCode: string) => {
     try {
       setQuizLoading(true);
       setQuizError(null);
       
-      // Get quiz info
       const { data: quizData, error: quizError } = await supabase
         .from('quizzes')
         .select('*')
@@ -127,7 +128,6 @@ const Quiz = () => {
       if (quizError) throw new Error(quizError.message);
       if (!quizData) throw new Error('Quiz not found');
       
-      // Get sections for the quiz
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('sections')
         .select('*')
@@ -136,7 +136,6 @@ const Quiz = () => {
       
       if (sectionsError) throw new Error(sectionsError.message);
       
-      // Get questions for each section
       let allQuestions: QuestionType[] = [];
       
       for (const section of sectionsData) {
@@ -148,7 +147,6 @@ const Quiz = () => {
           
         if (questionsError) throw new Error(questionsError.message);
         
-        // Get options for each question
         for (const question of questionsData) {
           const { data: optionsData, error: optionsError } = await supabase
             .from('options')
@@ -158,7 +156,6 @@ const Quiz = () => {
             
           if (optionsError) throw new Error(optionsError.message);
           
-          // Transform to match our app's structure
           allQuestions.push({
             id: question.id,
             text: question.text,
@@ -171,13 +168,11 @@ const Quiz = () => {
         }
       }
       
-      // Randomize the order of options for each question
       allQuestions = allQuestions.map(question => ({
         ...question,
         options: [...question.options].sort(() => Math.random() - 0.5)
       }));
       
-      // Set quiz data
       setQuizData({
         instructions: {
           title: quizData.title,
@@ -197,7 +192,6 @@ const Quiz = () => {
     }
   };
 
-  // Save quiz result to Supabase
   const saveQuizResult = async () => {
     if (!userInfo || !quizState.isCompleted) return;
     
@@ -223,7 +217,6 @@ const Quiz = () => {
     }
   };
 
-  // Handle user registration and fetch quiz
   const handleUserRegistration = (userData: typeof userInfo) => {
     setUser(userData);
     if (userData?.quizCode) {
@@ -231,21 +224,18 @@ const Quiz = () => {
     }
   };
 
-  // Save results when quiz is completed
   useEffect(() => {
     if (quizState.isCompleted) {
       saveQuizResult();
     }
   }, [quizState.isCompleted]);
 
-  // Request fullscreen when quiz starts
   useEffect(() => {
     if (quizState.isStarted && !quizState.isCompleted && !isFullScreen) {
       requestFullScreen();
     }
   }, [quizState.isStarted, quizState.isCompleted, isFullScreen, requestFullScreen]);
 
-  // Handle quiz submission
   const handleSubmitPrompt = () => {
     setShowConfirmDialog(true);
   };
@@ -265,24 +255,19 @@ const Quiz = () => {
     requestFullScreen();
   };
 
-  // Determine which component to render based on quiz state
   const renderContent = () => {
-    // If quiz is loading
     if (quizLoading) {
       return <div className="flex justify-center items-center py-10">Loading quiz...</div>;
     }
     
-    // If there was an error loading the quiz
     if (quizError) {
       return <div className="text-quiz-red p-4 border border-quiz-red rounded-md">{quizError}</div>;
     }
     
-    // If user hasn't registered
     if (!userInfo) {
       return <QuizForm onSubmit={handleUserRegistration} />;
     }
     
-    // If quiz is completed, show results
     if (quizState.isCompleted) {
       return (
         <QuizResults
@@ -296,7 +281,6 @@ const Quiz = () => {
       );
     }
     
-    // If quiz hasn't started, show instructions
     if (!quizState.isStarted) {
       return (
         <Instructions
@@ -307,7 +291,6 @@ const Quiz = () => {
       );
     }
     
-    // Otherwise, show the current question
     const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
     const isLastQuestion = quizState.currentQuestionIndex === quizState.questions.length - 1;
     
@@ -338,12 +321,10 @@ const Quiz = () => {
     <div className="quiz-container pb-10">
       {renderContent()}
       
-      {/* Fullscreen warning */}
       {isWarningShown && (
         <FullScreenAlert onReturn={handleReturnToFullScreen} />
       )}
       
-      {/* Submission confirmation dialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
