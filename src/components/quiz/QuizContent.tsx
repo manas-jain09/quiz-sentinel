@@ -1,10 +1,10 @@
 
 import { Clock } from 'lucide-react';
-import { QuizQuestion, QuizState } from '@/lib/types';
-import QuizQuestion from '@/components/QuizQuestion';
+import { QuizQuestion as QuestionType, QuizState } from '@/lib/types';
+import QuestionComponent from '@/components/QuizQuestion';
 
 interface QuizContentProps {
-  currentQuestion: QuizQuestion;
+  currentQuestion: QuestionType;
   currentQuestionIndex: number;
   totalQuestions: number;
   formatTimeRemaining: () => string;
@@ -35,7 +35,7 @@ const QuizContent = ({
         </div>
       </div>
       
-      <QuizQuestion
+      <QuestionComponent
         question={currentQuestion}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={totalQuestions}

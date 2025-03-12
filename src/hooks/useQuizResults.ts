@@ -1,6 +1,7 @@
 
 import { UserInfo } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useQuizResults = () => {
   const saveQuizResult = async (
@@ -10,7 +11,10 @@ export const useQuizResults = () => {
     totalQuestions: number,
     isCheating: boolean
   ) => {
-    if (!userInfo) return;
+    if (!userInfo || !quizId) {
+      console.error('Missing user info or quiz ID for saving results');
+      return;
+    }
     
     try {
       const { error } = await supabase
@@ -28,9 +32,13 @@ export const useQuizResults = () => {
         
       if (error) {
         console.error('Error saving quiz result:', error);
+        toast.error('Error saving your quiz result');
+      } else {
+        toast.success('Quiz completed successfully!');
       }
     } catch (error) {
       console.error('Error saving quiz result:', error);
+      toast.error('Error saving your quiz result');
     }
   };
 

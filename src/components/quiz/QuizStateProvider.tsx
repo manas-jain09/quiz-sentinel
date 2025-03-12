@@ -1,6 +1,6 @@
 
 import { ReactNode, useEffect, useState } from 'react';
-import { QuizInstructions, QuizQuestion, QuizState, UserInfo } from '@/lib/types';
+import { QuizInstructions, QuizQuestion, UserInfo } from '@/lib/types';
 import { useQuiz } from '@/hooks/useQuiz';
 import { useFullScreen } from '@/hooks/useFullScreen';
 import { useQuizData } from '@/hooks/useQuizData';
@@ -9,7 +9,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import FullScreenAlert from '@/components/quiz/FullScreenAlert';
 import { supabase } from '@/integrations/supabase/client';
 
-interface QuizState {
+interface QuizStateProviderProps {
+  children: (state: QuizStateValues) => ReactNode;
+}
+
+interface QuizStateValues {
   quizData: {
     instructions: QuizInstructions;
     questions: QuizQuestion[];
@@ -29,10 +33,6 @@ interface QuizState {
   formatTimeRemaining: () => string;
   handleReturnToFullScreen: () => void;
   setShowConfirmDialog: (show: boolean) => void;
-}
-
-interface QuizStateProviderProps {
-  children: (state: QuizState) => ReactNode;
 }
 
 export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
@@ -124,7 +124,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     requestFullScreen();
   };
 
-  const state: QuizState = {
+  const state: QuizStateValues = {
     quizData,
     quizLoading,
     quizError,
