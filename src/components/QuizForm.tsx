@@ -73,7 +73,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
             <Input
               id="name"
               name="name"
-              placeholder="John Doe"
+              placeholder="Rahul"
               value={formData.name}
               onChange={handleChange}
               className="input-field"
@@ -88,7 +88,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
               id="email"
               name="email"
               type="email"
-              placeholder="john@example.com"
+              placeholder="example@mitwpu.edu.in"
               value={formData.email}
               onChange={handleChange}
               className="input-field"
