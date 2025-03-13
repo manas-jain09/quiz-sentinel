@@ -30,6 +30,8 @@ export const useQuizData = () => {
       setQuizLoading(true);
       setQuizError(null);
       
+      console.log('Fetching quiz with code:', quizCode);
+      
       // Get the quiz data using maybeSingle instead of single for safer handling
       const { data: quizData, error: quizError } = await supabase
         .from('quizzes')
@@ -37,8 +39,17 @@ export const useQuizData = () => {
         .eq('code', quizCode)
         .maybeSingle();
       
-      if (quizError) throw new Error(quizError.message);
-      if (!quizData) throw new Error('Quiz not found with code: ' + quizCode);
+      if (quizError) {
+        console.error('Quiz fetch error:', quizError);
+        throw new Error(quizError.message);
+      }
+      
+      if (!quizData) {
+        console.error('Quiz not found with code:', quizCode);
+        throw new Error('Quiz not found with code: ' + quizCode);
+      }
+      
+      console.log('Quiz data found:', quizData);
       
       // Fetch the sections for this quiz
       const { data: sectionsData, error: sectionsError } = await supabase
@@ -47,24 +58,42 @@ export const useQuizData = () => {
         .eq('quiz_id', quizData.id)
         .order('display_order');
       
-      if (sectionsError) throw new Error(sectionsError.message);
+      if (sectionsError) {
+        console.error('Sections fetch error:', sectionsError);
+        throw new Error(sectionsError.message);
+      }
+      
       if (!sectionsData || sectionsData.length === 0) {
+        console.error('No sections found for quiz ID:', quizData.id);
         throw new Error('No sections found for this quiz');
       }
+      
+      console.log('Sections found:', sectionsData.length);
       
       let allQuestions: QuizQuestion[] = [];
       let quizSections: QuizSection[] = [];
       
       // For each section, fetch its questions
       for (const section of sectionsData) {
+        console.log('Fetching questions for section:', section.id);
+        
         const { data: questionsData, error: questionsError } = await supabase
           .from('questions')
           .select('*')
           .eq('section_id', section.id)
           .order('display_order');
           
-        if (questionsError) throw new Error(questionsError.message);
-        if (!questionsData || questionsData.length === 0) continue;
+        if (questionsError) {
+          console.error('Questions fetch error:', questionsError);
+          throw new Error(questionsError.message);
+        }
+        
+        if (!questionsData || questionsData.length === 0) {
+          console.warn('No questions found for section:', section.id);
+          continue;
+        }
+        
+        console.log('Questions found for section:', questionsData.length);
         
         const sectionQuestions: QuizQuestion[] = [];
         
@@ -76,8 +105,17 @@ export const useQuizData = () => {
             .eq('question_id', question.id)
             .order('display_order');
             
-          if (optionsError) throw new Error(optionsError.message);
-          if (!optionsData || optionsData.length === 0) continue;
+          if (optionsError) {
+            console.error('Options fetch error for question', question.id, optionsError);
+            throw new Error(optionsError.message);
+          }
+          
+          if (!optionsData || optionsData.length === 0) {
+            console.warn('No options found for question:', question.id);
+            continue;
+          }
+          
+          console.log('Options found for question:', optionsData.length);
           
           const formattedQuestion: QuizQuestion = {
             id: question.id,
@@ -110,6 +148,9 @@ export const useQuizData = () => {
       if (allQuestions.length === 0) {
         throw new Error('No questions found for this quiz');
       }
+      
+      console.log('Total questions loaded:', allQuestions.length);
+      console.log('Total sections loaded:', quizSections.length);
       
       setQuizData({
         instructions: {

@@ -26,16 +26,36 @@ const Quiz = () => {
           getCurrentQuestion
         } = state;
 
+        if (!userInfo) {
+          return <QuizForm onSubmit={handleUserRegistration} loading={quizLoading} />;
+        }
+        
         if (quizLoading) {
-          return <div className="flex justify-center items-center py-10">Loading quiz...</div>;
+          return <div className="flex justify-center items-center py-10">
+            <div className="animate-pulse flex flex-col items-center">
+              <div className="h-12 w-12 rounded-full bg-quiz-red/30 mb-4"></div>
+              <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 w-32 bg-gray-200 rounded"></div>
+              <p className="mt-4 text-gray-600">Loading quiz data...</p>
+            </div>
+          </div>;
         }
         
         if (quizError) {
-          return <div className="text-quiz-red p-4 border border-quiz-red rounded-md">{quizError}</div>;
-        }
-        
-        if (!userInfo) {
-          return <QuizForm onSubmit={handleUserRegistration} />;
+          return (
+            <div className="p-6 max-w-md mx-auto">
+              <div className="text-quiz-red p-4 border border-quiz-red rounded-md bg-red-50">
+                <h3 className="font-bold">Error Loading Quiz</h3>
+                <p>{quizError}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          );
         }
         
         if (quizState.isCompleted) {
@@ -63,7 +83,15 @@ const Quiz = () => {
         
         const currentQuestion = getCurrentQuestion();
         if (!currentQuestion) {
-          return <div>Error: No questions available</div>;
+          return <div className="p-4 text-center">
+            <div className="text-red-500 mb-2">Error: No questions available</div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-quiz-red text-white rounded"
+            >
+              Restart Quiz
+            </button>
+          </div>;
         }
         
         const currentSection = quizState.sections[quizState.currentSectionIndex];

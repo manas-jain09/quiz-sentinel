@@ -8,6 +8,7 @@ import { useQuizResults } from '@/hooks/useQuizResults';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import FullScreenAlert from '@/components/quiz/FullScreenAlert';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface QuizStateProviderProps {
   children: (state: QuizStateValues) => ReactNode;
@@ -62,24 +63,38 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     exitFullScreen
   } = useFullScreen(handleCheatingDetected);
 
-  const handleUserRegistration = (userData: UserInfo) => {
-    setUser(userData);
-    if (userData?.quizCode) {
-      fetchQuiz(userData.quizCode);
+  const handleUserRegistration = async (userData: UserInfo) => {
+    try {
+      console.log('User registration with quiz code:', userData.quizCode);
+      setUser(userData);
+      
+      await fetchQuiz(userData.quizCode);
       fetchQuizId(userData.quizCode);
+    } catch (error) {
+      console.error('Error during user registration:', error);
+      toast.error('Failed to load quiz. Please check your quiz code and try again.');
     }
   };
 
   const fetchQuizId = async (quizCode: string) => {
     try {
+      console.log('Fetching quiz ID for code:', quizCode);
       const { data, error } = await supabase
         .from('quizzes')
         .select('id')
         .eq('code', quizCode)
         .maybeSingle();
       
-      if (data && !error) {
+      if (error) {
+        console.error('Error fetching quiz ID:', error);
+        return;
+      }
+      
+      if (data) {
+        console.log('Quiz ID found:', data.id);
         setQuizId(data.id);
+      } else {
+        console.error('No quiz found with code:', quizCode);
       }
     } catch (error) {
       console.error('Error fetching quiz ID:', error);
@@ -87,7 +102,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   };
 
   useEffect(() => {
-    if (quizState.isCompleted && userInfo) {
+    if (quizState.isCompleted && userInfo && quizId) {
       saveQuizResult(
         userInfo,
         quizId,
@@ -96,7 +111,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
         quizState.isCheating
       );
     }
-  }, [quizState.isCompleted]);
+  }, [quizState.isCompleted, userInfo, quizId]);
 
   useEffect(() => {
     if (quizState.isStarted && !quizState.isCompleted && !isFullScreen) {

@@ -9,9 +9,10 @@ import { toast } from 'sonner';
 
 interface QuizFormProps {
   onSubmit: (userData: UserInfo) => void;
+  loading?: boolean;
 }
 
-const QuizForm = ({ onSubmit }: QuizFormProps) => {
+const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
   const [formData, setFormData] = useState<UserInfo>({
     name: '',
     email: '',
@@ -45,17 +46,12 @@ const QuizForm = ({ onSubmit }: QuizFormProps) => {
 
     setIsLoading(true);
     
-    // Here you would verify the quiz code with Supabase
-    // This is a placeholder for the actual implementation
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // For demo purposes, we'll just pass the data through
-      onSubmit(formData);
+      // Pass the data to parent component for quiz loading
+      await onSubmit(formData);
     } catch (error) {
-      toast.error('Failed to join quiz. Please try again.');
       console.error('Error joining quiz:', error);
+      toast.error('Failed to join quiz. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -140,9 +136,9 @@ const QuizForm = ({ onSubmit }: QuizFormProps) => {
           <Button 
             type="submit" 
             className="w-full bg-quiz-red hover:bg-quiz-red-light"
-            disabled={isLoading}
+            disabled={isLoading || loading}
           >
-            {isLoading ? "Joining..." : "Continue"}
+            {isLoading || loading ? "Joining..." : "Continue"}
           </Button>
         </form>
       </CardContent>
