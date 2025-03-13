@@ -22,7 +22,7 @@ interface QuizStateValues {
   quizState: any;
   isWarningShown: boolean;
   showConfirmDialog: boolean;
-  handleUserRegistration: (userData: UserInfo) => void;
+  handleUserRegistration: (userData: UserInfo) => Promise<void>;
   startQuiz: () => void;
   nextQuestion: () => void;
   previousQuestion: () => void;
@@ -41,6 +41,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [quizId, setQuizId] = useState<string | null>(null);
+  const [localQuizError, setLocalQuizError] = useState<string | null>(null);
 
   const {
     quizState,
@@ -66,13 +67,28 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   const handleUserRegistration = async (userData: UserInfo) => {
     try {
       console.log('User registration with quiz code:', userData.quizCode);
+      setLocalQuizError(null);
+      setUserInfo(userData);
       setUser(userData);
       
+      // Fetch quiz data
       await fetchQuiz(userData.quizCode);
-      fetchQuizId(userData.quizCode);
+      
+      // Check if quiz data is valid
+      if (!quizData.sections || quizData.sections.length === 0) {
+        console.error("Quiz data invalid after fetch:", quizData);
+        throw new Error("Unable to load quiz content. Please check the quiz code and try again.");
+      }
+      
+      await fetchQuizId(userData.quizCode);
+      console.log("Quiz loaded successfully", { quizData, quizState });
     } catch (error) {
       console.error('Error during user registration:', error);
-      toast.error('Failed to load quiz. Please check your quiz code and try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load quiz. Please check your quiz code and try again.';
+      setLocalQuizError(errorMessage);
+      toast.error(errorMessage);
+      // Reset user info if there was an error loading the quiz
+      setUserInfo(null);
     }
   };
 
@@ -87,7 +103,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
       
       if (error) {
         console.error('Error fetching quiz ID:', error);
-        return;
+        throw new Error(`Error fetching quiz: ${error.message}`);
       }
       
       if (data) {
@@ -95,9 +111,11 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
         setQuizId(data.id);
       } else {
         console.error('No quiz found with code:', quizCode);
+        throw new Error(`No quiz found with code: ${quizCode}`);
       }
     } catch (error) {
       console.error('Error fetching quiz ID:', error);
+      throw error;
     }
   };
 
@@ -141,7 +159,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   const state: QuizStateValues = {
     quizData,
     quizLoading,
-    quizError,
+    quizError: localQuizError || quizError,
     userInfo,
     quizState,
     isWarningShown,

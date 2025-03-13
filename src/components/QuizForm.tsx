@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from 'sonner';
 
 interface QuizFormProps {
-  onSubmit: (userData: UserInfo) => void;
+  onSubmit: (userData: UserInfo) => Promise<void>;
   loading?: boolean;
 }
 
@@ -51,7 +51,8 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
       await onSubmit(formData);
     } catch (error) {
       console.error('Error joining quiz:', error);
-      toast.error('Failed to join quiz. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to join quiz. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -77,6 +78,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
               onChange={handleChange}
               className="input-field"
               required
+              disabled={isLoading || loading}
             />
           </div>
           
@@ -91,6 +93,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
               onChange={handleChange}
               className="input-field"
               required
+              disabled={isLoading || loading}
             />
           </div>
           
@@ -104,6 +107,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
               onChange={handleChange}
               className="input-field"
               required
+              disabled={isLoading || loading}
             />
           </div>
           
@@ -117,6 +121,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
               onChange={handleChange}
               className="input-field"
               required
+              disabled={isLoading || loading}
             />
           </div>
           
@@ -130,6 +135,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
               onChange={handleChange}
               className="input-field"
               required
+              disabled={isLoading || loading}
             />
           </div>
           

@@ -42,11 +42,30 @@ const Quiz = () => {
         }
         
         if (quizError) {
+          console.error("Quiz error:", quizError);
           return (
             <div className="p-6 max-w-md mx-auto">
               <div className="text-quiz-red p-4 border border-quiz-red rounded-md bg-red-50">
                 <h3 className="font-bold">Error Loading Quiz</h3>
                 <p>{quizError}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          );
+        }
+        
+        // Check if we have quiz data before proceeding
+        if (!quizData || !quizData.sections || quizData.sections.length === 0) {
+          return (
+            <div className="p-6 max-w-md mx-auto">
+              <div className="text-quiz-red p-4 border border-quiz-red rounded-md bg-red-50">
+                <h3 className="font-bold">Quiz Data Error</h3>
+                <p>Unable to load quiz content. The quiz may not exist or may have been removed.</p>
                 <button 
                   onClick={() => window.location.reload()} 
                   className="mt-4 px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
@@ -83,6 +102,12 @@ const Quiz = () => {
         
         const currentQuestion = getCurrentQuestion();
         if (!currentQuestion) {
+          console.error("No current question found", { 
+            sectionIndex: quizState.currentSectionIndex,
+            questionIndex: quizState.currentQuestionIndex,
+            sections: quizState.sections 
+          });
+          
           return <div className="p-4 text-center">
             <div className="text-red-500 mb-2">Error: No questions available</div>
             <button 

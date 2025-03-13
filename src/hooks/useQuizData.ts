@@ -32,7 +32,7 @@ export const useQuizData = () => {
       
       console.log('Fetching quiz with code:', quizCode);
       
-      // Get the quiz data using maybeSingle instead of single for safer handling
+      // Get the quiz data
       const { data: quizData, error: quizError } = await supabase
         .from('quizzes')
         .select('*')
@@ -41,15 +41,28 @@ export const useQuizData = () => {
       
       if (quizError) {
         console.error('Quiz fetch error:', quizError);
-        throw new Error(quizError.message);
+        throw new Error(`Error fetching quiz: ${quizError.message}`);
       }
       
       if (!quizData) {
         console.error('Quiz not found with code:', quizCode);
-        throw new Error('Quiz not found with code: ' + quizCode);
+        throw new Error(`Quiz not found with code: ${quizCode}`);
       }
       
       console.log('Quiz data found:', quizData);
+      
+      // Check if the quiz is active based on start and end dates
+      const now = new Date();
+      const startDate = quizData.start_date_time ? new Date(quizData.start_date_time) : null;
+      const endDate = quizData.end_date_time ? new Date(quizData.end_date_time) : null;
+      
+      if (startDate && now < startDate) {
+        throw new Error(`This quiz is not active yet. It starts on ${startDate.toLocaleString()}`);
+      }
+      
+      if (endDate && now > endDate) {
+        throw new Error(`This quiz has ended on ${endDate.toLocaleString()}`);
+      }
       
       // Fetch the sections for this quiz
       const { data: sectionsData, error: sectionsError } = await supabase
@@ -60,7 +73,7 @@ export const useQuizData = () => {
       
       if (sectionsError) {
         console.error('Sections fetch error:', sectionsError);
-        throw new Error(sectionsError.message);
+        throw new Error(`Error fetching sections: ${sectionsError.message}`);
       }
       
       if (!sectionsData || sectionsData.length === 0) {
@@ -85,7 +98,7 @@ export const useQuizData = () => {
           
         if (questionsError) {
           console.error('Questions fetch error:', questionsError);
-          throw new Error(questionsError.message);
+          throw new Error(`Error fetching questions: ${questionsError.message}`);
         }
         
         if (!questionsData || questionsData.length === 0) {
@@ -107,7 +120,7 @@ export const useQuizData = () => {
             
           if (optionsError) {
             console.error('Options fetch error for question', question.id, optionsError);
-            throw new Error(optionsError.message);
+            throw new Error(`Error fetching options: ${optionsError.message}`);
           }
           
           if (!optionsData || optionsData.length === 0) {
@@ -165,12 +178,14 @@ export const useQuizData = () => {
       });
       
       setQuizLoading(false);
+      return quizSections; // Return the sections to the caller
     } catch (error) {
       console.error('Error fetching quiz:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load quiz';
       setQuizError(errorMessage);
       toast.error(errorMessage);
       setQuizLoading(false);
+      throw error;
     }
   };
 
