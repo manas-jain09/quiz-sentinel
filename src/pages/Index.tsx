@@ -11,7 +11,7 @@ const Index = () => {
           <div className="inline-block mb-4">
             <div className="text-xs font-semibold text-quiz-red tracking-widest uppercase">Secure Assessment Platform</div>
             <h1 className="text-5xl md:text-6xl font-bold mt-2 text-transparent bg-clip-text bg-gradient-to-r from-quiz-red to-quiz-red-light">
-              Quiz Sentinel
+              ArenaHQ Battlegrounds
             </h1>
           </div>
           
