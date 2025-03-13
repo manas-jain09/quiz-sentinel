@@ -121,12 +121,13 @@ const QuizResults = ({
         )}
       </CardContent>
       <CardFooter className="flex justify-center pt-2">
-        <Button 
-          onClick={onReturnHome}
-          className="bg-quiz-red hover:bg-quiz-red-light"
-        >
-          Return to Home
-        </Button>
+       <Button 
+  onClick={() => window.location.href = "https://arenahq-mitwpu.in/home"}
+  className="bg-quiz-red hover:bg-quiz-red-light"
+>
+  Return to Home
+</Button>
+
       </CardFooter>
     </Card>
   );
