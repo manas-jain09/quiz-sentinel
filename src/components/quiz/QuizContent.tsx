@@ -1,6 +1,6 @@
 
-import { Clock } from 'lucide-react';
-import { QuizQuestion as QuestionType, QuizState } from '@/lib/types';
+import { Clock, BookOpen } from 'lucide-react';
+import { QuizQuestion as QuestionType } from '@/lib/types';
 import QuestionComponent from '@/components/QuizQuestion';
 
 interface QuizContentProps {
@@ -12,6 +12,9 @@ interface QuizContentProps {
   onNext: () => void;
   onPrevious: () => void;
   onSubmit: () => void;
+  currentSectionTitle?: string;
+  currentSection?: number;
+  totalSections?: number;
 }
 
 const QuizContent = ({
@@ -22,13 +25,20 @@ const QuizContent = ({
   onOptionSelect,
   onNext,
   onPrevious,
-  onSubmit
+  onSubmit,
+  currentSectionTitle = "General Questions",
+  currentSection = 1,
+  totalSections = 1
 }: QuizContentProps) => {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex justify-center mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="section-info flex items-center text-sm text-muted-foreground">
+          <BookOpen className="h-4 w-4 mr-1" />
+          <span>Section {currentSection} of {totalSections}: {currentSectionTitle}</span>
+        </div>
         <div className="timer-display px-4 py-2 bg-white shadow rounded-full flex items-center text-quiz-red">
           <Clock className="h-4 w-4 mr-1" />
           <span>{formatTimeRemaining()}</span>

@@ -22,7 +22,8 @@ const Quiz = () => {
           previousQuestion,
           selectOption,
           handleSubmitPrompt,
-          formatTimeRemaining
+          formatTimeRemaining,
+          getCurrentQuestion
         } = state;
 
         if (quizLoading) {
@@ -60,18 +61,27 @@ const Quiz = () => {
           );
         }
         
-        const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
+        const currentQuestion = getCurrentQuestion();
+        if (!currentQuestion) {
+          return <div>Error: No questions available</div>;
+        }
+        
+        const currentSection = quizState.sections[quizState.currentSectionIndex];
+        const currentSectionQuestions = currentSection?.questions || [];
         
         return (
           <QuizContent
             currentQuestion={currentQuestion}
             currentQuestionIndex={quizState.currentQuestionIndex}
-            totalQuestions={quizState.questions.length}
+            totalQuestions={currentSectionQuestions.length}
             formatTimeRemaining={formatTimeRemaining}
             onOptionSelect={selectOption}
             onNext={nextQuestion}
             onPrevious={previousQuestion}
             onSubmit={handleSubmitPrompt}
+            currentSectionTitle={currentSection?.title || "Questions"}
+            currentSection={quizState.currentSectionIndex + 1}
+            totalSections={quizState.sections.length}
           />
         );
       }}

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { QuizState, QuizQuestion, QuizInstructions, UserInfo } from '@/lib/types';
+import { QuizState, QuizQuestion, QuizInstructions, UserInfo, QuizSection } from '@/lib/types';
 import { toast } from 'sonner';
 
 // Helper function to shuffle options
@@ -11,14 +11,16 @@ const shuffleOptions = (questions: QuizQuestion[]): QuizQuestion[] => {
   }));
 };
 
-export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQuestion[]) => {
+export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQuestion[], sampleSections: QuizSection[]) => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [quizState, setQuizState] = useState<QuizState>({
     isStarted: false,
     isCompleted: false,
     currentQuestionIndex: 0,
+    currentSectionIndex: 0,
     timeRemaining: instructions.duration * 60, // Convert minutes to seconds
     questions: shuffleOptions(sampleQuestions),
+    sections: sampleSections,
     isFullScreenExitWarningShown: false,
     fullScreenExitCount: 0,
     fullScreenExitTime: null,
@@ -80,34 +82,83 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
 
   // Navigate to the next question
   const nextQuestion = useCallback(() => {
-    if (quizState.currentQuestionIndex < quizState.questions.length - 1) {
-      setQuizState(prev => ({
-        ...prev,
-        currentQuestionIndex: prev.currentQuestionIndex + 1
-      }));
-    }
-  }, [quizState.currentQuestionIndex, quizState.questions.length]);
+    setQuizState(prev => {
+      const currentSection = prev.sections[prev.currentSectionIndex];
+      const isLastQuestionInSection = prev.currentQuestionIndex === currentSection?.questions.length - 1;
+      
+      if (isLastQuestionInSection) {
+        // If last question in section, move to next section
+        if (prev.currentSectionIndex < prev.sections.length - 1) {
+          return {
+            ...prev,
+            currentSectionIndex: prev.currentSectionIndex + 1,
+            currentQuestionIndex: 0
+          };
+        }
+      } else {
+        // Move to next question in current section
+        return {
+          ...prev,
+          currentQuestionIndex: prev.currentQuestionIndex + 1
+        };
+      }
+      
+      return prev; // No change if already at the last question of the last section
+    });
+  }, []);
 
   // Navigate to the previous question
   const previousQuestion = useCallback(() => {
-    if (quizState.currentQuestionIndex > 0) {
-      setQuizState(prev => ({
-        ...prev,
-        currentQuestionIndex: prev.currentQuestionIndex - 1
-      }));
-    }
-  }, [quizState.currentQuestionIndex]);
+    setQuizState(prev => {
+      if (prev.currentQuestionIndex > 0) {
+        // If not the first question in section, go to previous question
+        return {
+          ...prev,
+          currentQuestionIndex: prev.currentQuestionIndex - 1
+        };
+      } else if (prev.currentSectionIndex > 0) {
+        // If first question but not first section, go to last question of previous section
+        const previousSection = prev.sections[prev.currentSectionIndex - 1];
+        return {
+          ...prev,
+          currentSectionIndex: prev.currentSectionIndex - 1,
+          currentQuestionIndex: previousSection.questions.length - 1
+        };
+      }
+      
+      return prev; // No change if already at the first question
+    });
+  }, []);
+
+  // Get the current question based on current section and question index
+  const getCurrentQuestion = useCallback(() => {
+    if (quizState.sections.length === 0) return null;
+    
+    const currentSection = quizState.sections[quizState.currentSectionIndex];
+    if (!currentSection) return null;
+    
+    return currentSection.questions[quizState.currentQuestionIndex];
+  }, [quizState.sections, quizState.currentSectionIndex, quizState.currentQuestionIndex]);
 
   // Handle option selection
   const selectOption = useCallback((questionId: string, optionId: string) => {
     setQuizState(prev => {
+      // Update in both questions array and sections array
       const updatedQuestions = prev.questions.map(q => 
         q.id === questionId ? { ...q, selectedOptionId: optionId } : q
       );
       
+      const updatedSections = prev.sections.map(section => ({
+        ...section,
+        questions: section.questions.map(q => 
+          q.id === questionId ? { ...q, selectedOptionId: optionId } : q
+        )
+      }));
+      
       return {
         ...prev,
-        questions: updatedQuestions
+        questions: updatedQuestions,
+        sections: updatedSections
       };
     });
   }, []);
@@ -141,12 +192,8 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
       score
     }));
 
-    // Here you would integrate with Supabase to save the results
-    // This is a placeholder for the actual implementation
-    console.log('Quiz submitted', { userInfo, score, answers: quizState.questions });
-
     return score;
-  }, [calculateScore, quizState.questions, userInfo]);
+  }, [calculateScore, quizState.questions]);
 
   return {
     quizState,
@@ -158,6 +205,7 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
     selectOption,
     submitQuiz,
     formatTimeRemaining,
-    handleCheatingDetected
+    handleCheatingDetected,
+    getCurrentQuestion
   };
 };

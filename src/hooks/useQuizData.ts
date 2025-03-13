@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { QuizInstructions, QuizQuestion } from '@/lib/types';
+import { QuizInstructions, QuizQuestion, QuizSection } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface QuizData {
   instructions: QuizInstructions;
   questions: QuizQuestion[];
+  sections: QuizSection[];
 }
 
 export const useQuizData = () => {
@@ -18,7 +19,8 @@ export const useQuizData = () => {
       totalQuestions: 0,
       additionalInfo: []
     },
-    questions: []
+    questions: [],
+    sections: []
   });
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState<string | null>(null);
@@ -51,6 +53,7 @@ export const useQuizData = () => {
       }
       
       let allQuestions: QuizQuestion[] = [];
+      let quizSections: QuizSection[] = [];
       
       // For each section, fetch its questions
       for (const section of sectionsData) {
@@ -63,6 +66,8 @@ export const useQuizData = () => {
         if (questionsError) throw new Error(questionsError.message);
         if (!questionsData || questionsData.length === 0) continue;
         
+        const sectionQuestions: QuizQuestion[] = [];
+        
         // For each question, fetch its options
         for (const question of questionsData) {
           const { data: optionsData, error: optionsError } = await supabase
@@ -74,14 +79,30 @@ export const useQuizData = () => {
           if (optionsError) throw new Error(optionsError.message);
           if (!optionsData || optionsData.length === 0) continue;
           
-          allQuestions.push({
+          const formattedQuestion: QuizQuestion = {
             id: question.id,
             text: question.text,
+            sectionId: section.id,
             options: optionsData.map(option => ({
               id: option.id,
               text: option.text,
               isCorrect: option.is_correct
             }))
+          };
+          
+          // Shuffle options
+          formattedQuestion.options = [...formattedQuestion.options].sort(() => Math.random() - 0.5);
+          
+          allQuestions.push(formattedQuestion);
+          sectionQuestions.push(formattedQuestion);
+        }
+        
+        if (sectionQuestions.length > 0) {
+          quizSections.push({
+            id: section.id,
+            title: section.title,
+            instructions: section.instructions || undefined,
+            questions: sectionQuestions
           });
         }
       }
@@ -89,12 +110,6 @@ export const useQuizData = () => {
       if (allQuestions.length === 0) {
         throw new Error('No questions found for this quiz');
       }
-      
-      // Shuffle options for each question
-      allQuestions = allQuestions.map(question => ({
-        ...question,
-        options: [...question.options].sort(() => Math.random() - 0.5)
-      }));
       
       setQuizData({
         instructions: {
@@ -104,7 +119,8 @@ export const useQuizData = () => {
           totalQuestions: allQuestions.length,
           additionalInfo: []
         },
-        questions: allQuestions
+        questions: allQuestions,
+        sections: quizSections
       });
       
       setQuizLoading(false);

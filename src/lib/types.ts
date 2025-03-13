@@ -27,6 +27,14 @@ export interface QuizQuestion {
   text: string;
   options: QuizOption[];
   selectedOptionId?: string;
+  sectionId?: string;
+}
+
+export interface QuizSection {
+  id: string;
+  title: string;
+  instructions?: string;
+  questions: QuizQuestion[];
 }
 
 export interface QuizState {
@@ -35,6 +43,8 @@ export interface QuizState {
   currentQuestionIndex: number;
   timeRemaining: number; // in seconds
   questions: QuizQuestion[];
+  sections: QuizSection[];
+  currentSectionIndex: number;
   score?: number;
   isFullScreenExitWarningShown: boolean;
   fullScreenExitCount: number;

@@ -14,10 +14,7 @@ interface QuizStateProviderProps {
 }
 
 interface QuizStateValues {
-  quizData: {
-    instructions: QuizInstructions;
-    questions: QuizQuestion[];
-  };
+  quizData: any;
   quizLoading: boolean;
   quizError: string | null;
   userInfo: UserInfo | null;
@@ -33,6 +30,7 @@ interface QuizStateValues {
   formatTimeRemaining: () => string;
   handleReturnToFullScreen: () => void;
   setShowConfirmDialog: (show: boolean) => void;
+  getCurrentQuestion: () => QuizQuestion | null;
 }
 
 export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
@@ -52,8 +50,9 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     selectOption,
     submitQuiz,
     formatTimeRemaining,
-    handleCheatingDetected
-  } = useQuiz(quizData.instructions, quizData.questions);
+    handleCheatingDetected,
+    getCurrentQuestion
+  } = useQuiz(quizData.instructions, quizData.questions, quizData.sections);
 
   const {
     isFullScreen,
@@ -77,7 +76,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
         .from('quizzes')
         .select('id')
         .eq('code', quizCode)
-        .single();
+        .maybeSingle();
       
       if (data && !error) {
         setQuizId(data.id);
@@ -140,7 +139,8 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     handleSubmitPrompt,
     formatTimeRemaining,
     handleReturnToFullScreen,
-    setShowConfirmDialog
+    setShowConfirmDialog,
+    getCurrentQuestion
   };
 
   return (
