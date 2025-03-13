@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 import QuizForm from './QuizForm';
 import Instructions from './Instructions';
@@ -59,7 +58,6 @@ const Quiz = () => {
           );
         }
         
-        // Check if we have quiz data before proceeding
         if (!quizData || !quizData.sections || quizData.sections.length === 0) {
           return (
             <div className="p-6 max-w-md mx-auto">
@@ -100,7 +98,6 @@ const Quiz = () => {
           );
         }
         
-        // Validate sections and questions before proceeding
         if (!quizState.sections || quizState.sections.length === 0) {
           console.error("No sections available", { quizState });
           return (
@@ -165,6 +162,8 @@ const Quiz = () => {
           );
         }
         
+        const isLastSection = quizState.currentSectionIndex === quizState.sections.length - 1;
+        
         return (
           <QuizContent
             currentQuestion={currentQuestion}
@@ -178,6 +177,7 @@ const Quiz = () => {
             currentSectionTitle={currentSection.title || "Questions"}
             currentSection={quizState.currentSectionIndex + 1}
             totalSections={quizState.sections.length}
+            isLastSection={isLastSection}
           />
         );
       }}

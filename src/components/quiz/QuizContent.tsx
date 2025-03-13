@@ -15,6 +15,7 @@ interface QuizContentProps {
   currentSectionTitle?: string;
   currentSection?: number;
   totalSections?: number;
+  isLastSection: boolean;
 }
 
 const QuizContent = ({
@@ -28,7 +29,8 @@ const QuizContent = ({
   onSubmit,
   currentSectionTitle = "General Questions",
   currentSection = 1,
-  totalSections = 1
+  totalSections = 1,
+  isLastSection = false
 }: QuizContentProps) => {
   const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
 
@@ -54,6 +56,8 @@ const QuizContent = ({
         onPrevious={onPrevious}
         onSubmit={onSubmit}
         isLastQuestion={isLastQuestion}
+        isLastSection={isLastSection}
+        showSubmitButton={isLastSection && isLastQuestion}
       />
     </div>
   );

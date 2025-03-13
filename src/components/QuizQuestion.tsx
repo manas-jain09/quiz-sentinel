@@ -15,6 +15,8 @@ interface QuizQuestionProps {
   onPrevious: () => void;
   onSubmit: () => void;
   isLastQuestion: boolean;
+  isLastSection?: boolean;
+  showSubmitButton?: boolean;
 }
 
 const QuizQuestion = ({
@@ -25,7 +27,9 @@ const QuizQuestion = ({
   onNext,
   onPrevious,
   onSubmit,
-  isLastQuestion
+  isLastQuestion,
+  isLastSection = false,
+  showSubmitButton = false
 }: QuizQuestionProps) => {
   const handleSelectOption = (optionId: string) => {
     onOptionSelect(question.id, optionId);
@@ -83,7 +87,7 @@ const QuizQuestion = ({
           Previous
         </Button>
         
-        {isLastQuestion ? (
+        {showSubmitButton ? (
           <Button 
             onClick={onSubmit} 
             className="bg-quiz-red hover:bg-quiz-red-light flex items-center gap-1"
