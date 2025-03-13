@@ -67,7 +67,7 @@ const Instructions = ({ instructions, userInfo, onStart }: InstructionsProps) =>
         
         {instructions.additionalInfo && (
           <div className="border-t pt-4">
-            <h3 className="text-sm font-semibold mb-2">Additional Information:</h3>
+           
             <ul className="space-y-1 text-sm list-disc pl-5">
               {instructions.additionalInfo.map((info, index) => (
                 <li key={index}>{info}</li>
