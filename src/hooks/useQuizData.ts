@@ -165,7 +165,7 @@ export const useQuizData = () => {
       console.log('Total questions loaded:', allQuestions.length);
       console.log('Total sections loaded:', quizSections.length);
       
-      setQuizData({
+      const updatedQuizData = {
         instructions: {
           title: quizData.title,
           description: quizData.instructions || '',
@@ -175,14 +175,26 @@ export const useQuizData = () => {
         },
         questions: allQuestions,
         sections: quizSections
-      });
+      };
       
+      setQuizData(updatedQuizData);
       setQuizLoading(false);
       return quizSections; // Return the sections to the caller
     } catch (error) {
       console.error('Error fetching quiz:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load quiz';
       setQuizError(errorMessage);
+      setQuizData({
+        instructions: {
+          title: "",
+          description: "",
+          duration: 30,
+          totalQuestions: 0,
+          additionalInfo: []
+        },
+        questions: [],
+        sections: []
+      });
       toast.error(errorMessage);
       setQuizLoading(false);
       throw error;

@@ -100,6 +100,47 @@ const Quiz = () => {
           );
         }
         
+        // Validate sections and questions before proceeding
+        if (!quizState.sections || quizState.sections.length === 0) {
+          console.error("No sections available", { quizState });
+          return (
+            <div className="p-6 max-w-md mx-auto">
+              <div className="text-quiz-red p-4 border border-quiz-red rounded-md bg-red-50">
+                <h3 className="font-bold">Quiz Data Error</h3>
+                <p>No sections found for this quiz. Please try again.</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        const currentSection = quizState.sections[quizState.currentSectionIndex];
+        if (!currentSection || !currentSection.questions) {
+          console.error("Invalid section or questions", { 
+            sectionIndex: quizState.currentSectionIndex,
+            sections: quizState.sections 
+          });
+          return (
+            <div className="p-6 max-w-md mx-auto">
+              <div className="text-quiz-red p-4 border border-quiz-red rounded-md bg-red-50">
+                <h3 className="font-bold">Quiz Data Error</h3>
+                <p>The selected section is not available. Please try again.</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="mt-4 px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          );
+        }
+        
         const currentQuestion = getCurrentQuestion();
         if (!currentQuestion) {
           console.error("No current question found", { 
@@ -108,31 +149,33 @@ const Quiz = () => {
             sections: quizState.sections 
           });
           
-          return <div className="p-4 text-center">
-            <div className="text-red-500 mb-2">Error: No questions available</div>
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-quiz-red text-white rounded"
-            >
-              Restart Quiz
-            </button>
-          </div>;
+          return (
+            <div className="p-6 max-w-md mx-auto">
+              <div className="text-quiz-red p-4 border border-quiz-red rounded-md bg-red-50">
+                <h3 className="font-bold">Quiz Content Error</h3>
+                <p>No questions available for this section. Please try again or contact support.</p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="mt-4 px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
+                >
+                  Restart Quiz
+                </button>
+              </div>
+            </div>
+          );
         }
-        
-        const currentSection = quizState.sections[quizState.currentSectionIndex];
-        const currentSectionQuestions = currentSection?.questions || [];
         
         return (
           <QuizContent
             currentQuestion={currentQuestion}
             currentQuestionIndex={quizState.currentQuestionIndex}
-            totalQuestions={currentSectionQuestions.length}
+            totalQuestions={currentSection.questions.length}
             formatTimeRemaining={formatTimeRemaining}
             onOptionSelect={selectOption}
             onNext={nextQuestion}
             onPrevious={previousQuestion}
             onSubmit={handleSubmitPrompt}
-            currentSectionTitle={currentSection?.title || "Questions"}
+            currentSectionTitle={currentSection.title || "Questions"}
             currentSection={quizState.currentSectionIndex + 1}
             totalSections={quizState.sections.length}
           />

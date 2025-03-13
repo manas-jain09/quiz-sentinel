@@ -42,10 +42,12 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [quizId, setQuizId] = useState<string | null>(null);
   const [localQuizError, setLocalQuizError] = useState<string | null>(null);
+  const [dataInitialized, setDataInitialized] = useState(false);
 
   const {
     quizState,
     setUser,
+    initializeQuiz,
     startQuiz,
     nextQuestion,
     previousQuestion,
@@ -64,6 +66,15 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     exitFullScreen
   } = useFullScreen(handleCheatingDetected);
 
+  // Use effect to initialize quiz data when it becomes available
+  useEffect(() => {
+    if (quizData && quizData.sections && quizData.sections.length > 0 && !dataInitialized) {
+      console.log('Initializing quiz with data:', quizData);
+      initializeQuiz(quizData.instructions, quizData.questions, quizData.sections);
+      setDataInitialized(true);
+    }
+  }, [quizData, dataInitialized, initializeQuiz]);
+
   const handleUserRegistration = async (userData: UserInfo) => {
     try {
       console.log('User registration with quiz code:', userData.quizCode);
@@ -72,16 +83,16 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
       setUser(userData);
       
       // Fetch quiz data
-      await fetchQuiz(userData.quizCode);
+      const sections = await fetchQuiz(userData.quizCode);
       
       // Check if quiz data is valid
-      if (!quizData.sections || quizData.sections.length === 0) {
-        console.error("Quiz data invalid after fetch:", quizData);
+      if (!sections || sections.length === 0) {
+        console.error("Quiz data invalid after fetch:", { sections });
         throw new Error("Unable to load quiz content. Please check the quiz code and try again.");
       }
       
       await fetchQuizId(userData.quizCode);
-      console.log("Quiz loaded successfully", { quizData, quizState });
+      console.log("Quiz loaded successfully", { quizData, sections });
     } catch (error) {
       console.error('Error during user registration:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load quiz. Please check your quiz code and try again.';

@@ -18,9 +18,9 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
     isCompleted: false,
     currentQuestionIndex: 0,
     currentSectionIndex: 0,
-    timeRemaining: instructions.duration * 60, // Convert minutes to seconds
-    questions: shuffleOptions(sampleQuestions),
-    sections: sampleSections,
+    timeRemaining: (instructions?.duration || 30) * 60, // Convert minutes to seconds, default to 30 mins
+    questions: shuffleOptions(sampleQuestions || []),
+    sections: sampleSections || [],
     isFullScreenExitWarningShown: false,
     fullScreenExitCount: 0,
     fullScreenExitTime: null,
@@ -32,13 +32,43 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
     setUserInfo(user);
   }, []);
 
+  // Initialize quiz with new data
+  const initializeQuiz = useCallback((
+    newInstructions: QuizInstructions, 
+    newQuestions: QuizQuestion[], 
+    newSections: QuizSection[]
+  ) => {
+    console.log('Initializing quiz with:', { 
+      instructionsLength: newInstructions ? Object.keys(newInstructions).length : 0,
+      questionsCount: newQuestions ? newQuestions.length : 0, 
+      sectionsCount: newSections ? newSections.length : 0 
+    });
+    
+    setQuizState(prev => ({
+      ...prev,
+      timeRemaining: (newInstructions?.duration || 30) * 60,
+      questions: shuffleOptions(newQuestions || []),
+      sections: newSections || [],
+      currentQuestionIndex: 0,
+      currentSectionIndex: 0
+    }));
+  }, []);
+
   // Start the quiz
   const startQuiz = useCallback(() => {
+    console.log('Starting quiz with sections:', quizState.sections);
+    
+    if (!quizState.sections || quizState.sections.length === 0) {
+      console.error('Cannot start quiz: No sections available');
+      toast.error('Quiz data is not properly loaded. Please try again.');
+      return;
+    }
+    
     setQuizState(prev => ({
       ...prev,
       isStarted: true
     }));
-  }, []);
+  }, [quizState.sections]);
 
   // Handle timer
   useEffect(() => {
@@ -84,7 +114,13 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
   const nextQuestion = useCallback(() => {
     setQuizState(prev => {
       const currentSection = prev.sections[prev.currentSectionIndex];
-      const isLastQuestionInSection = prev.currentQuestionIndex === currentSection?.questions.length - 1;
+      
+      if (!currentSection || !currentSection.questions) {
+        console.error('Cannot navigate: Invalid section or questions');
+        return prev;
+      }
+      
+      const isLastQuestionInSection = prev.currentQuestionIndex === currentSection.questions.length - 1;
       
       if (isLastQuestionInSection) {
         // If last question in section, move to next section
@@ -132,10 +168,32 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
 
   // Get the current question based on current section and question index
   const getCurrentQuestion = useCallback(() => {
-    if (quizState.sections.length === 0) return null;
+    if (!quizState.sections || quizState.sections.length === 0) {
+      console.log('No sections available in quiz state', quizState);
+      return null;
+    }
     
     const currentSection = quizState.sections[quizState.currentSectionIndex];
-    if (!currentSection) return null;
+    if (!currentSection || !currentSection.questions) {
+      console.log('Invalid current section in quiz state', { 
+        sectionIndex: quizState.currentSectionIndex, 
+        sections: quizState.sections 
+      });
+      return null;
+    }
+    
+    if (currentSection.questions.length === 0) {
+      console.log('No questions in current section', currentSection);
+      return null;
+    }
+    
+    if (quizState.currentQuestionIndex >= currentSection.questions.length) {
+      console.log('Current question index out of bounds', { 
+        currentQuestionIndex: quizState.currentQuestionIndex, 
+        questionsLength: currentSection.questions.length 
+      });
+      return null;
+    }
     
     return currentSection.questions[quizState.currentQuestionIndex];
   }, [quizState.sections, quizState.currentSectionIndex, quizState.currentQuestionIndex]);
@@ -199,6 +257,7 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
     quizState,
     userInfo,
     setUser,
+    initializeQuiz,
     startQuiz,
     nextQuestion,
     previousQuestion,
