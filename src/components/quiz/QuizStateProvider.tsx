@@ -82,8 +82,8 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
       setUserInfo(userData);
       setUser(userData);
       
-      // Fetch quiz data
-      const sections = await fetchQuiz(userData.quizCode);
+      // Fetch quiz data with user PRN to check for previous attempts
+      const sections = await fetchQuiz(userData.quizCode, userData.prn);
       
       // Check if quiz data is valid
       if (!sections || sections.length === 0) {

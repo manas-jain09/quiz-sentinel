@@ -46,6 +46,15 @@ const QuizQuestion = ({
         <CardTitle className="text-xl font-semibold">{question.text}</CardTitle>
       </CardHeader>
       <CardContent>
+        {question.imageUrl && (
+          <div className="mb-4 flex justify-center">
+            <img 
+              src={question.imageUrl} 
+              alt="Question image" 
+              className="max-w-full rounded-md object-contain max-h-64"
+            />
+          </div>
+        )}
         <RadioGroup 
           value={question.selectedOptionId} 
           onValueChange={handleSelectOption}

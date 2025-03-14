@@ -28,6 +28,7 @@ export interface QuizQuestion {
   options: QuizOption[];
   selectedOptionId?: string;
   sectionId?: string;
+  imageUrl?: string;
 }
 
 export interface QuizSection {

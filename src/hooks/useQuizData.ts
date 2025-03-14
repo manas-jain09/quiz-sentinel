@@ -25,7 +25,7 @@ export const useQuizData = () => {
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState<string | null>(null);
 
-  const fetchQuiz = async (quizCode: string) => {
+  const fetchQuiz = async (quizCode: string, userPRN: string) => {
     try {
       setQuizLoading(true);
       setQuizError(null);
@@ -51,6 +51,21 @@ export const useQuizData = () => {
       
       console.log('Quiz data found:', quizData);
       
+      // Check if the user has already attempted this quiz
+      const { data: attemptData, error: attemptError } = await supabase
+        .from('quiz_attempts')
+        .select('*')
+        .eq('quiz_id', quizData.id)
+        .eq('prn', userPRN)
+        .maybeSingle();
+        
+      if (attemptError) {
+        console.error('Error checking previous attempts:', attemptError);
+      } else if (attemptData) {
+        console.log('User has already attempted this quiz:', attemptData);
+        throw new Error('You have already attempted this quiz. Only one attempt is allowed per quiz.');
+      }
+      
       // Check if the quiz is active based on start and end dates
       const now = new Date();
       const startDate = quizData.start_date_time ? new Date(quizData.start_date_time) : null;
@@ -61,7 +76,7 @@ export const useQuizData = () => {
       }
       
       if (endDate && now > endDate) {
-        throw new Error(`This quiz has ended on ${endDate.toLocaleString()}`);
+        throw new Error(`This quiz has ended on ${endDate.toLocaleString()}. You can no longer attempt it.`);
       }
       
       // Fetch the sections for this quiz
@@ -134,6 +149,7 @@ export const useQuizData = () => {
             id: question.id,
             text: question.text,
             sectionId: section.id,
+            imageUrl: question.image_url,
             options: optionsData.map(option => ({
               id: option.id,
               text: option.text,
@@ -164,6 +180,21 @@ export const useQuizData = () => {
       
       console.log('Total questions loaded:', allQuestions.length);
       console.log('Total sections loaded:', quizSections.length);
+      
+      // Record the user's attempt
+      const { error: recordAttemptError } = await supabase
+        .from('quiz_attempts')
+        .insert({
+          quiz_id: quizData.id,
+          prn: userPRN
+        });
+        
+      if (recordAttemptError) {
+        console.error('Error recording quiz attempt:', recordAttemptError);
+        // Don't throw here, just log it - we still want the user to take the quiz
+      } else {
+        console.log('Quiz attempt recorded successfully for PRN:', userPRN);
+      }
       
       const updatedQuizData = {
         instructions: {

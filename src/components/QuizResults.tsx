@@ -2,7 +2,7 @@
 import { QuizQuestion, UserInfo } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Clock } from 'lucide-react';
 
 interface QuizResultsProps {
   score: number;
@@ -98,9 +98,9 @@ const QuizResults = ({
                   <div key={question.id} className="flex items-start">
                     <div className="flex-shrink-0 mt-0.5">
                       {isCorrect ? (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <Check className="h-5 w-5 text-green-600" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-destructive" />
+                        <X className="h-5 w-5 text-destructive" />
                       )}
                     </div>
                     <div className="ml-2">
@@ -121,13 +121,12 @@ const QuizResults = ({
         )}
       </CardContent>
       <CardFooter className="flex justify-center pt-2">
-       <Button 
-  onClick={() => window.location.href = "https://arenahq-mitwpu.in/home"}
-  className="bg-quiz-red hover:bg-quiz-red-light"
->
-  Return to Home
-</Button>
-
+        <Button 
+          onClick={() => window.location.href = "https://arenahq-mitwpu.in/home"}
+          className="bg-quiz-red hover:bg-quiz-red-light"
+        >
+          Return to Home
+        </Button>
       </CardFooter>
     </Card>
   );
