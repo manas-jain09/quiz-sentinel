@@ -242,15 +242,25 @@ export const useQuiz = (instructions: QuizInstructions, sampleQuestions: QuizQue
 
   // Submit the quiz
   const submitQuiz = useCallback(() => {
-    const score = calculateScore();
-    
-    setQuizState(prev => ({
-      ...prev,
-      isCompleted: true,
-      score
-    }));
+    console.log('Submitting quiz with questions:', quizState.questions);
+    try {
+      const score = calculateScore();
+      console.log('Calculated score:', score);
+      
+      setQuizState(prev => {
+        console.log('Updating quiz state with score:', score);
+        return {
+          ...prev,
+          isCompleted: true,
+          score
+        };
+      });
 
-    return score;
+      return score;
+    } catch (error) {
+      console.error('Error in submitQuiz:', error);
+      throw error;
+    }
   }, [calculateScore, quizState.questions]);
 
   return {

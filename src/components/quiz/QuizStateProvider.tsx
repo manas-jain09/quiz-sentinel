@@ -1,4 +1,3 @@
-
 import { ReactNode, useEffect, useState } from 'react';
 import { QuizInstructions, QuizQuestion, UserInfo } from '@/lib/types';
 import { useQuiz } from '@/hooks/useQuiz';
@@ -66,7 +65,6 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     exitFullScreen
   } = useFullScreen(handleCheatingDetected);
 
-  // Use effect to initialize quiz data when it becomes available
   useEffect(() => {
     if (quizData && quizData.sections && quizData.sections.length > 0 && !dataInitialized) {
       console.log('Initializing quiz with data:', quizData);
@@ -82,10 +80,8 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
       setUserInfo(userData);
       setUser(userData);
       
-      // Fetch quiz data with user PRN to check for previous attempts
       const sections = await fetchQuiz(userData.quizCode, userData.prn);
       
-      // Check if quiz data is valid
       if (!sections || sections.length === 0) {
         console.error("Quiz data invalid after fetch:", { sections });
         throw new Error("Unable to load quiz content. Please check the quiz code and try again.");
@@ -98,7 +94,6 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load quiz. Please check your quiz code and try again.';
       setLocalQuizError(errorMessage);
       toast.error(errorMessage);
-      // Reset user info if there was an error loading the quiz
       setUserInfo(null);
     }
   };
@@ -153,9 +148,15 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   };
 
   const handleConfirmSubmit = () => {
-    submitQuiz();
-    setShowConfirmDialog(false);
-    exitFullScreen();
+    try {
+      submitQuiz();
+      setShowConfirmDialog(false);
+      exitFullScreen();
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+      toast.error('There was an error submitting your quiz. Please try again.');
+      setShowConfirmDialog(false);
+    }
   };
 
   const handleCancelSubmit = () => {

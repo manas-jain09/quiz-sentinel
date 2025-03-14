@@ -2,7 +2,7 @@
 import { QuizQuestion, UserInfo } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, AlertTriangle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Clock, Check, X } from 'lucide-react';
 
 interface QuizResultsProps {
   score: number;

@@ -76,6 +76,8 @@ const Quiz = () => {
         }
         
         if (quizState.isCompleted) {
+          console.log('Quiz completed, showing results with score:', quizState.score);
+          console.log('Questions for results:', quizState.questions);
           return (
             <QuizResults
               score={quizState.score || 0}
