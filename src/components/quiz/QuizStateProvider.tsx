@@ -31,6 +31,7 @@ interface QuizStateValues {
   handleReturnToFullScreen: () => void;
   setShowConfirmDialog: (show: boolean) => void;
   getCurrentQuestion: () => QuizQuestion | null;
+  handleReturnHome: () => void;
 }
 
 export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
@@ -151,7 +152,6 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     try {
       submitQuiz();
       setShowConfirmDialog(false);
-      exitFullScreen();
     } catch (error) {
       console.error('Error submitting quiz:', error);
       toast.error('There was an error submitting your quiz. Please try again.');
@@ -166,6 +166,11 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   const handleReturnToFullScreen = () => {
     setIsWarningShown(false);
     requestFullScreen();
+  };
+
+  const handleReturnHome = () => {
+    exitFullScreen();
+    window.location.href = "https://arenahq-mitwpu.in/home";
   };
 
   const state: QuizStateValues = {
@@ -185,7 +190,8 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     formatTimeRemaining,
     handleReturnToFullScreen,
     setShowConfirmDialog,
-    getCurrentQuestion
+    getCurrentQuestion,
+    handleReturnHome
   };
 
   return (
