@@ -22,7 +22,8 @@ const Quiz = () => {
           selectOption,
           handleSubmitPrompt,
           formatTimeRemaining,
-          getCurrentQuestion
+          getCurrentQuestion,
+          handleReturnHome
         } = state;
 
         if (!userInfo) {
@@ -85,7 +86,7 @@ const Quiz = () => {
               userInfo={userInfo}
               questions={quizState.questions}
               isCheating={quizState.isCheating}
-              onReturnHome={() => window.location.reload()}
+              onReturnHome={handleReturnHome}
             />
           );
         }
