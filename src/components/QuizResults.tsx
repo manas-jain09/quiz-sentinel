@@ -38,12 +38,6 @@ const QuizResults = ({
     return 'Needs Improvement';
   };
 
-  // Function to handle exit fullscreen and return to home
-  const handleReturnHome = () => {
-    // This will be handled by the parent component
-    onReturnHome();
-  };
-
   return (
     <Card className="w-full max-w-2xl mx-auto animate-slide-up shadow-lg border-gray-100">
       <CardHeader className="text-center pb-2">
@@ -128,7 +122,7 @@ const QuizResults = ({
       </CardContent>
       <CardFooter className="flex justify-center pt-2">
         <Button 
-          onClick={handleReturnHome}
+          onClick={() => window.location.href = "https://arenahq-mitwpu.in/home"}
           className="bg-quiz-red hover:bg-quiz-red-light"
         >
           Return to Home
