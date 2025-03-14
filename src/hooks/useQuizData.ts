@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { QuizInstructions, QuizQuestion, QuizSection } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { formatInTimeZone } from 'date-fns-tz';
 
 interface QuizData {
   instructions: QuizInstructions;
@@ -32,6 +32,7 @@ export const useQuizData = () => {
       
       console.log('Fetching quiz with code:', quizCode);
       
+      // Get the quiz data
       const { data: quizData, error: quizError } = await supabase
         .from('quizzes')
         .select('*')
@@ -50,6 +51,7 @@ export const useQuizData = () => {
       
       console.log('Quiz data found:', quizData);
       
+      // Check if the user has already attempted this quiz
       const { data: attemptData, error: attemptError } = await supabase
         .from('quiz_attempts')
         .select('*')
@@ -64,20 +66,20 @@ export const useQuizData = () => {
         throw new Error('You have already attempted this quiz. Only one attempt is allowed per quiz.');
       }
       
+      // Check if the quiz is active based on start and end dates
       const now = new Date();
       const startDate = quizData.start_date_time ? new Date(quizData.start_date_time) : null;
       const endDate = quizData.end_date_time ? new Date(quizData.end_date_time) : null;
       
       if (startDate && now < startDate) {
-        const formattedDate = formatInTimeZone(startDate, 'Asia/Kolkata', 'PPp');
-        throw new Error(`This quiz is not active yet. It starts on ${formattedDate} (IST)`);
+        throw new Error(`This quiz is not active yet. It starts on ${startDate.toLocaleString()}`);
       }
       
       if (endDate && now > endDate) {
-        const formattedDate = formatInTimeZone(endDate, 'Asia/Kolkata', 'PPp');
-        throw new Error(`This quiz has ended on ${formattedDate} (IST). You can no longer attempt it.`);
+        throw new Error(`This quiz has ended on ${endDate.toLocaleString()}. You can no longer attempt it.`);
       }
       
+      // Fetch the sections for this quiz
       const { data: sectionsData, error: sectionsError } = await supabase
         .from('sections')
         .select('*')
@@ -99,6 +101,7 @@ export const useQuizData = () => {
       let allQuestions: QuizQuestion[] = [];
       let quizSections: QuizSection[] = [];
       
+      // For each section, fetch its questions
       for (const section of sectionsData) {
         console.log('Fetching questions for section:', section.id);
         
@@ -122,6 +125,7 @@ export const useQuizData = () => {
         
         const sectionQuestions: QuizQuestion[] = [];
         
+        // For each question, fetch its options
         for (const question of questionsData) {
           const { data: optionsData, error: optionsError } = await supabase
             .from('options')
@@ -153,6 +157,7 @@ export const useQuizData = () => {
             }))
           };
           
+          // Shuffle options
           formattedQuestion.options = [...formattedQuestion.options].sort(() => Math.random() - 0.5);
           
           allQuestions.push(formattedQuestion);
@@ -176,6 +181,7 @@ export const useQuizData = () => {
       console.log('Total questions loaded:', allQuestions.length);
       console.log('Total sections loaded:', quizSections.length);
       
+      // Record the user's attempt
       const { error: recordAttemptError } = await supabase
         .from('quiz_attempts')
         .insert({
@@ -185,6 +191,7 @@ export const useQuizData = () => {
         
       if (recordAttemptError) {
         console.error('Error recording quiz attempt:', recordAttemptError);
+        // Don't throw here, just log it - we still want the user to take the quiz
       } else {
         console.log('Quiz attempt recorded successfully for PRN:', userPRN);
       }
@@ -203,7 +210,7 @@ export const useQuizData = () => {
       
       setQuizData(updatedQuizData);
       setQuizLoading(false);
-      return quizSections;
+      return quizSections; // Return the sections to the caller
     } catch (error) {
       console.error('Error fetching quiz:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load quiz';

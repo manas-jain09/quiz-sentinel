@@ -1,8 +1,8 @@
+
 import { QuizQuestion, UserInfo } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, AlertTriangle, Clock, Check, X } from 'lucide-react';
-import { formatInTimeZone } from 'date-fns-tz';
 
 interface QuizResultsProps {
   score: number;
@@ -38,11 +38,9 @@ const QuizResults = ({
     return 'Needs Improvement';
   };
 
-  const formatDate = (date: Date) => {
-    return formatInTimeZone(date, 'Asia/Kolkata', 'PPp');
-  };
-
+  // Function to handle exit fullscreen and return to home
   const handleReturnHome = () => {
+    // This will be handled by the parent component
     onReturnHome();
   };
 
@@ -50,9 +48,6 @@ const QuizResults = ({
     <Card className="w-full max-w-2xl mx-auto animate-slide-up shadow-lg border-gray-100">
       <CardHeader className="text-center pb-2">
         <CardTitle className="text-2xl font-bold">Quiz Results</CardTitle>
-        <div className="text-sm text-muted-foreground">
-          {formatDate(new Date())} (IST)
-        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {isCheating ? (
