@@ -74,7 +74,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
             <Input
               id="name"
               name="name"
-              placeholder="Rahul"
+              placeholder="Your Full Name"
               value={formData.name}
               onChange={handleChange}
               className="input-field"
@@ -117,9 +117,10 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                 <select
                   id="year"
                   name="year"
+                  placeholder="Your Year"
                   value={formData.year}
                   onChange={handleChange}
-                  className={`w-full rounded-md border-gray-200 focus:border-primary/30 focus:ring-2 focus:ring-primary/10 h-10 px-3 py-2 text-sm ${errors.year ? 'border-contest-red/50 focus:border-contest-red/50 focus:ring-contest-red/10' : ''}`}
+                  className="input-field"
                 >
                   <option value="">Select Year</option>
                   <option value="First">First</option>
@@ -127,7 +128,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                   <option value="Third">Third</option>
                   <option value="Fourth">Fourth</option>
                 </select>
-                {errors.year && <p className="text-contest-red text-xs mt-1">{errors.year}</p>}
+
               </div>
               
               <div className="space-y-2">
@@ -135,12 +136,13 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                 <Input
                   id="batch"
                   name="batch"
+                  placeholder="Your Batch(Ex: A1)"
                   value={formData.batch}
                   onChange={handleChange}
                   placeholder="Enter your batch"
-                  className={`form-input-highlight ${errors.batch ? 'border-contest-red/50 focus:border-contest-red/50 focus:ring-contest-red/10' : ''}`}
+                  className="input-field"
                 />
-                {errors.batch && <p className="text-contest-red text-xs mt-1">{errors.batch}</p>}
+            
               </div>
           
           <div className="space-y-2">
