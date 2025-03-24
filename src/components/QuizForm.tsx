@@ -33,7 +33,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     e.preventDefault();
     
     // Simple validation
-    if (!formData.name || !formData.email || !formData.prn || !formData.division || !formData.quizCode) {
+    if (!formData.name || !formData.email || !formData.prn || !formData.year || !formData.batch || !formData.quizCode) {
       toast.error('Please fill in all fields');
       return;
     }
