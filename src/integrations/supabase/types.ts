@@ -185,7 +185,8 @@ export type Database = {
       student_results: {
         Row: {
           cheating_status: string
-          division: string
+          year: string
+          batch: string
           email: string
           id: string
           marks_scored: number
@@ -197,7 +198,8 @@ export type Database = {
         }
         Insert: {
           cheating_status?: string
-          division: string
+          year: string
+          batch: string
           email: string
           id?: string
           marks_scored: number
@@ -209,7 +211,8 @@ export type Database = {
         }
         Update: {
           cheating_status?: string
-          division?: string
+          year?: string
+          batch?: string
           email?: string
           id?: string
           marks_scored?: number
