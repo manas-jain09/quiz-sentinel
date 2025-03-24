@@ -17,7 +17,8 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     name: '',
     email: '',
     prn: '',
-    division: '',
+    year: '',
+    batch: '',
     quizCode: ''
   });
 
@@ -111,19 +112,36 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="division">Division</Label>
-            <Input
-              id="division"
-              name="division"
-              placeholder="Your division"
-              value={formData.division}
-              onChange={handleChange}
-              className="input-field"
-              required
-              disabled={isLoading || loading}
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="year">Year</Label>
+                <select
+                  id="year"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleChange}
+                  className={`w-full rounded-md border-gray-200 focus:border-primary/30 focus:ring-2 focus:ring-primary/10 h-10 px-3 py-2 text-sm ${errors.year ? 'border-contest-red/50 focus:border-contest-red/50 focus:ring-contest-red/10' : ''}`}
+                >
+                  <option value="">Select Year</option>
+                  <option value="First">First</option>
+                  <option value="Second">Second</option>
+                  <option value="Third">Third</option>
+                  <option value="Fourth">Fourth</option>
+                </select>
+                {errors.year && <p className="text-contest-red text-xs mt-1">{errors.year}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="batch">Batch</Label>
+                <Input
+                  id="batch"
+                  name="batch"
+                  value={formData.batch}
+                  onChange={handleChange}
+                  placeholder="Enter your batch"
+                  className={`form-input-highlight ${errors.batch ? 'border-contest-red/50 focus:border-contest-red/50 focus:ring-contest-red/10' : ''}`}
+                />
+                {errors.batch && <p className="text-contest-red text-xs mt-1">{errors.batch}</p>}
+              </div>
           
           <div className="space-y-2">
             <Label htmlFor="quizCode">Quiz Code</Label>
