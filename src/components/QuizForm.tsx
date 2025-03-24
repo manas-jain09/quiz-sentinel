@@ -121,6 +121,8 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                   value={formData.year}
                   onChange={handleChange}
                   className="input-field"
+                  required
+                  disabled={isLoading || loading}
                 >
                   <option value="">Select Year</option>
                   <option value="First">First</option>
@@ -141,6 +143,8 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                   onChange={handleChange}
                   placeholder="Enter your batch"
                   className="input-field"
+                  required
+                  disabled={isLoading || loading}
                 />
             
               </div>
