@@ -98,27 +98,7 @@ const QuizResults = ({
                 );
                 const isCorrect = selectedOption?.isCorrect;
                 
-                return (
-                  <div key={question.id} className="flex items-start">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {isCorrect ? (
-                        <Check className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <X className="h-5 w-5 text-destructive" />
-                      )}
-                    </div>
-                    <div className="ml-2">
-                      <p className="text-sm font-medium">
-                        Question {index + 1}: {question.text}
-                      </p>
-                      {selectedOption && (
-                        <p className="text-xs text-muted-foreground">
-                          Your answer: {selectedOption.text}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
+              
               })}
             </div>
           </div>
