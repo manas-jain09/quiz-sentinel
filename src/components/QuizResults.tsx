@@ -2,7 +2,7 @@
 import { QuizQuestion, UserInfo } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, AlertTriangle, Clock, Check, X } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 interface QuizResultsProps {
   score: number;
@@ -87,22 +87,6 @@ const QuizResults = ({
             <span className="text-sm">{userInfo.batch}</span>
           </div>
         </div>
-
-        {!isCheating && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Question Summary</h3>
-            <div className="space-y-2">
-              {questions.map((question, index) => {
-                const selectedOption = question.options.find(
-                  opt => opt.id === question.selectedOptionId
-                );
-                const isCorrect = selectedOption?.isCorrect;
-                
-              
-              })}
-            </div>
-          </div>
-        )}
       </CardContent>
       <CardFooter className="flex justify-center pt-2">
         <Button 
