@@ -141,7 +141,6 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                   placeholder="Your Batch(Ex: A1)"
                   value={formData.batch}
                   onChange={handleChange}
-                  placeholder="Enter your batch"
                   className="input-field"
                   required
                   disabled={isLoading || loading}
@@ -172,9 +171,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-center text-sm text-muted-foreground">
-        Make sure to enter the correct quiz code provided by your instructor
-      </CardFooter>
+
     </Card>
   );
 };
