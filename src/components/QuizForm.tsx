@@ -17,7 +17,8 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     name: '',
     email: '',
     prn: '',
-    division: '',
+    year: '',
+    batch: '',
     quizCode: ''
   });
 
@@ -32,7 +33,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     e.preventDefault();
     
     // Simple validation
-    if (!formData.name || !formData.email || !formData.prn || !formData.division || !formData.quizCode) {
+    if (!formData.name || !formData.email || !formData.prn || !formData.year || !formData.batch || !formData.quizCode) {
       toast.error('Please fill in all fields');
       return;
     }
@@ -73,7 +74,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
             <Input
               id="name"
               name="name"
-              placeholder="Rahul"
+              placeholder="Your Full Name"
               value={formData.name}
               onChange={handleChange}
               className="input-field"
@@ -111,19 +112,42 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="division">Division</Label>
-            <Input
-              id="division"
-              name="division"
-              placeholder="Your division"
-              value={formData.division}
-              onChange={handleChange}
-              className="input-field"
-              required
-              disabled={isLoading || loading}
-            />
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="year">Year</Label>
+                <select
+                  id="year"
+                  name="year"
+                  placeholder="Your Year"
+                  value={formData.year}
+                  onChange={handleChange}
+                  className="input-field"
+                  required
+                  disabled={isLoading || loading}
+                >
+                  <option value="">Select Year</option>
+                  <option value="First">First</option>
+                  <option value="Second">Second</option>
+                  <option value="Third">Third</option>
+                  <option value="Fourth">Fourth</option>
+                </select>
+
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="batch">Batch</Label>
+                <Input
+                  id="batch"
+                  name="batch"
+                  placeholder="Your Batch(Ex: A1)"
+                  value={formData.batch}
+                  onChange={handleChange}
+                  placeholder="Enter your batch"
+                  className="input-field"
+                  required
+                  disabled={isLoading || loading}
+                />
+            
+              </div>
           
           <div className="space-y-2">
             <Label htmlFor="quizCode">Quiz Code</Label>
