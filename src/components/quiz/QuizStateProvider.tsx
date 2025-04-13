@@ -170,7 +170,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
 
   const handleReturnHome = () => {
     exitFullScreen();
-    window.location.href = "https://quiz.arenahq-mitwpu.in/";
+    window.location.href = "https://arenahq-mitwpu.in/home";
   };
 
   const state: QuizStateValues = {
