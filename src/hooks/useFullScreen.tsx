@@ -1,48 +1,98 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useIsMobile } from './use-mobile';
 
 export const useFullScreen = (onCheatingDetected: () => void) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [fullScreenExitCount, setFullScreenExitCount] = useState(0);
   const [fullScreenExitTime, setFullScreenExitTime] = useState<number | null>(null);
   const [isWarningShown, setIsWarningShown] = useState(false);
+  const isMobile = useIsMobile();
 
   // Function to check if the document is in fullscreen mode
   const checkFullScreen = useCallback(() => {
-    return !!(
+    // For desktop browsers
+    const standardFullscreen = !!(
       document.fullscreenElement ||
       (document as any).webkitFullscreenElement ||
       (document as any).mozFullScreenElement ||
       (document as any).msFullscreenElement
     );
-  }, []);
+
+    // For iOS Safari and some mobile browsers that don't support standard fullscreen API
+    const mobileFullscreen = isMobile && (
+      window.navigator.standalone || // iOS home screen web app
+      window.matchMedia('(display-mode: fullscreen)').matches ||
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.innerHeight === window.screen.height) // Rough estimate for fullscreen on mobile
+    );
+
+    return standardFullscreen || mobileFullscreen;
+  }, [isMobile]);
 
   // Function to request fullscreen
   const requestFullScreen = useCallback(() => {
     const elem = document.documentElement;
     
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if ((elem as any).webkitRequestFullscreen) {
-      (elem as any).webkitRequestFullscreen();
-    } else if ((elem as any).mozRequestFullScreen) {
-      (elem as any).mozRequestFullScreen();
-    } else if ((elem as any).msRequestFullscreen) {
-      (elem as any).msRequestFullscreen();
+    try {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if ((elem as any).webkitRequestFullscreen) {
+        (elem as any).webkitRequestFullscreen();
+      } else if ((elem as any).mozRequestFullScreen) {
+        (elem as any).mozRequestFullScreen();
+      } else if ((elem as any).msRequestFullscreen) {
+        (elem as any).msRequestFullscreen();
+      }
+
+      // Special handling for mobile
+      if (isMobile) {
+        // For iOS devices, provide instructions if fullscreen isn't supported
+        if (/(iPad|iPhone|iPod)/g.test(navigator.userAgent)) {
+          toast.info("For best experience on iOS, add this page to your home screen and open it from there", {
+            duration: 5000,
+          });
+        }
+        
+        // Try to enter fullscreen with screen orientation API for better mobile experience
+        if (screen.orientation && (screen.orientation as any).lock) {
+          try {
+            (screen.orientation as any).lock('portrait');
+          } catch (e) {
+            console.warn("Could not lock screen orientation:", e);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Fullscreen request failed:", error);
+      toast.error("Couldn't enter fullscreen mode. Please try again or use a different browser.");
     }
-  }, []);
+  }, [isMobile]);
 
   // Function to exit fullscreen
   const exitFullScreen = useCallback(() => {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if ((document as any).webkitExitFullscreen) {
-      (document as any).webkitExitFullscreen();
-    } else if ((document as any).mozCancelFullScreen) {
-      (document as any).mozCancelFullScreen();
-    } else if ((document as any).msExitFullscreen) {
-      (document as any).msExitFullscreen();
+    try {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      } else if ((document as any).mozCancelFullScreen) {
+        (document as any).mozCancelFullScreen();
+      } else if ((document as any).msExitFullscreen) {
+        (document as any).msExitFullscreen();
+      }
+      
+      // Release orientation lock if it was set
+      if (screen.orientation && (screen.orientation as any).unlock) {
+        try {
+          (screen.orientation as any).unlock();
+        } catch (e) {
+          console.warn("Could not unlock screen orientation:", e);
+        }
+      }
+    } catch (error) {
+      console.error("Exiting fullscreen failed:", error);
     }
   }, []);
 
@@ -103,13 +153,24 @@ export const useFullScreen = (onCheatingDetected: () => void) => {
     document.addEventListener('mozfullscreenchange', handleFullScreenChange);
     document.addEventListener('MSFullscreenChange', handleFullScreenChange);
     
+    // For mobile, we need additional checks since fullscreen events might not fire
+    if (isMobile) {
+      window.addEventListener('resize', handleFullScreenChange);
+      window.addEventListener('orientationchange', handleFullScreenChange);
+    }
+    
     return () => {
       document.removeEventListener('fullscreenchange', handleFullScreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullScreenChange);
       document.removeEventListener('mozfullscreenchange', handleFullScreenChange);
       document.removeEventListener('MSFullscreenChange', handleFullScreenChange);
+      
+      if (isMobile) {
+        window.removeEventListener('resize', handleFullScreenChange);
+        window.removeEventListener('orientationchange', handleFullScreenChange);
+      }
     };
-  }, [handleFullScreenChange]);
+  }, [handleFullScreenChange, isMobile]);
 
   return {
     isFullScreen,

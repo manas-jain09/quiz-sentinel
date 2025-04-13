@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import FullScreenAlert from '@/components/quiz/FullScreenAlert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface QuizStateProviderProps {
   children: (state: QuizStateValues) => ReactNode;
@@ -37,6 +38,7 @@ interface QuizStateValues {
 export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   const { quizData, quizLoading, quizError, fetchQuiz } = useQuizData();
   const { saveQuizResult } = useQuizResults();
+  const isMobile = useIsMobile();
   
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -140,9 +142,16 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
 
   useEffect(() => {
     if (quizState.isStarted && !quizState.isCompleted && !isFullScreen) {
-      requestFullScreen();
+      if (isMobile) {
+        const timer = setTimeout(() => {
+          requestFullScreen();
+        }, 500);
+        return () => clearTimeout(timer);
+      } else {
+        requestFullScreen();
+      }
     }
-  }, [quizState.isStarted, quizState.isCompleted, isFullScreen, requestFullScreen]);
+  }, [quizState.isStarted, quizState.isCompleted, isFullScreen, requestFullScreen, isMobile]);
 
   const handleSubmitPrompt = () => {
     setShowConfirmDialog(true);
