@@ -6,6 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface QuizFormProps {
   onSubmit: (userData: UserInfo) => Promise<void>;
@@ -17,7 +24,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     name: '',
     email: '',
     prn: '',
-    division: '',
+    division: '', // Keeping this in the state but not showing it in the form
     quizCode: '',
     year: '',
     batch: ''
@@ -25,8 +32,12 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -34,7 +45,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     e.preventDefault();
     
     // Simple validation
-    if (!formData.name || !formData.email || !formData.prn || !formData.division || !formData.quizCode) {
+    if (!formData.name || !formData.email || !formData.prn || !formData.quizCode) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -114,39 +125,26 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="division">Division</Label>
-            <Input
-              id="division"
-              name="division"
-              placeholder="Your Division"
-              value={formData.division}
-              onChange={handleChange}
-              className="input-field"
-              required
-              disabled={isLoading || loading}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="year">Year (Optional)</Label>
-            <select
-              id="year"
-              name="year"
-              value={formData.year}
-              onChange={handleChange}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+            <Label htmlFor="year">Year</Label>
+            <Select 
+              value={formData.year} 
+              onValueChange={(value) => handleSelectChange('year', value)}
               disabled={isLoading || loading}
             >
-              <option value="">Select Year</option>
-              <option value="First">First</option>
-              <option value="Second">Second</option>
-              <option value="Third">Third</option>
-              <option value="Fourth">Fourth</option>
-            </select>
+              <SelectTrigger id="year" className="w-full">
+                <SelectValue placeholder="Select Year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="First">First</SelectItem>
+                <SelectItem value="Second">Second</SelectItem>
+                <SelectItem value="Third">Third</SelectItem>
+                <SelectItem value="Fourth">Fourth</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="batch">Batch (Optional)</Label>
+            <Label htmlFor="batch">Batch</Label>
             <Input
               id="batch"
               name="batch"
