@@ -22,7 +22,8 @@ export const useFullScreen = (onCheatingDetected: () => void) => {
 
     // For iOS Safari and some mobile browsers that don't support standard fullscreen API
     const mobileFullscreen = isMobile && (
-      window.navigator.standalone || // iOS home screen web app
+      // Use type assertion for non-standard properties
+      ('standalone' in window.navigator && (window.navigator as any).standalone) || // iOS home screen web app
       window.matchMedia('(display-mode: fullscreen)').matches ||
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.innerHeight === window.screen.height) // Rough estimate for fullscreen on mobile
