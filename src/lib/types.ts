@@ -5,8 +5,6 @@ export interface UserInfo {
   prn: string;
   division: string;
   quizCode: string;
-  year?: string;
-  batch?: string;
 }
 
 export interface QuizInstructions {

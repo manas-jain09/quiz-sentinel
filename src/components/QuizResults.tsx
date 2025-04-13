@@ -79,21 +79,13 @@ const QuizResults = ({
             <span className="text-sm">{userInfo.prn}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-sm font-medium">Division:</span>
-            <span className="text-sm">{userInfo.division}</span>
+            <span className="text-sm font-medium">Year:</span>
+            <span className="text-sm">{userInfo.year}</span>
           </div>
-          {userInfo.year && (
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Year:</span>
-              <span className="text-sm">{userInfo.year}</span>
-            </div>
-          )}
-          {userInfo.batch && (
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Batch:</span>
-              <span className="text-sm">{userInfo.batch}</span>
-            </div>
-          )}
+          <div className="flex justify-between">
+            <span className="text-sm font-medium">Batch:</span>
+            <span className="text-sm">{userInfo.batch}</span>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="flex justify-center pt-2">
