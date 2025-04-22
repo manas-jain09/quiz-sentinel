@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect, useState } from 'react';
 import { QuizInstructions, QuizQuestion, UserInfo } from '@/lib/types';
 import { useQuiz } from '@/hooks/useQuiz';
@@ -14,6 +15,7 @@ interface QuizStateProviderProps {
   children: (state: QuizStateValues) => ReactNode;
 }
 
+// Separate explicit type definition to avoid recursive type references
 interface QuizStateValues {
   quizData: any;
   quizLoading: boolean;
@@ -218,7 +220,6 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
 
   // Practice mode check
   useEffect(() => {
-    // "quizType" property must be present in quizData (or fallback to assessment if missing)
     if (
       practiceUserId &&
       practiceQuizId &&
@@ -258,6 +259,7 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     }
   }, [mode, practiceQuizId, practiceUserVerified, fetchQuiz, quizData.sections, quizLoading]);
 
+  // Create the state object without self-references
   const state: QuizStateValues = {
     quizData,
     quizLoading,
