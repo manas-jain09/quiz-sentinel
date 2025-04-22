@@ -122,6 +122,7 @@ export type Database = {
           instructions: string | null
           start_date_time: string
           title: string
+          type: string | null
           updated_at: string
         }
         Insert: {
@@ -134,6 +135,7 @@ export type Database = {
           instructions?: string | null
           start_date_time: string
           title: string
+          type?: string | null
           updated_at?: string
         }
         Update: {
@@ -146,6 +148,7 @@ export type Database = {
           instructions?: string | null
           start_date_time?: string
           title?: string
+          type?: string | null
           updated_at?: string
         }
         Relationships: []
