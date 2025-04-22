@@ -1,6 +1,6 @@
 
 import Quiz from '@/components/Quiz';
-
+// Now supports ?userId=xxx&quizId=yyy
 const QuizPage = () => {
   return (
     <div className="min-h-screen bg-background py-8">
@@ -13,5 +13,4 @@ const QuizPage = () => {
     </div>
   );
 };
-
 export default QuizPage;

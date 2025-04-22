@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react';
 import QuizForm from './QuizForm';
 import Instructions from './Instructions';
@@ -24,22 +23,93 @@ const Quiz = () => {
           handleSubmitPrompt,
           formatTimeRemaining,
           getCurrentQuestion,
-          handleReturnHome
+          handleReturnHome,
+          mode
         } = state;
+
+        if (mode === "practice") {
+          if (quizLoading || !quizData || !quizData.sections || quizData.sections.length === 0) {
+            return (
+              <div className="flex justify-center items-center py-10">
+                <div className="animate-pulse flex flex-col items-center">
+                  <div className="h-12 w-12 rounded-full bg-quiz-red/30 mb-4"></div>
+                  <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                  <p className="mt-4 text-gray-600">Loading quiz...</p>
+                </div>
+              </div>
+            );
+          }
+
+          if (quizError) {
+            return (
+              <div className="p-6 max-w-md mx-auto">
+                <div className="text-quiz-red p-4 border border-quiz-red rounded-md bg-red-50">
+                  <h3 className="font-bold">Quiz Error</h3>
+                  <p>{quizError}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="mt-4 px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          if (quizState.isCompleted) {
+            return (
+              <div className="max-w-2xl mx-auto text-center my-10 p-10 border shadow">
+                <h2 className="font-bold text-2xl mb-2">Practice Complete!</h2>
+                <p className="mb-2">You scored <span className="font-semibold text-quiz-red">{quizState.score}</span> out of {quizState.questions.length}.</p>
+                <p className="mb-4">Review your answers, then <a className="text-blue-600" href="https://astra.ikshvaku-innovations.in">return to ASTRA</a>.</p>
+                <button
+                  className="px-4 py-2 bg-quiz-red text-white rounded hover:bg-quiz-red-light"
+                  onClick={() => window.location.replace("https://astra.ikshvaku-innovations.in")}
+                >Return to ASTRA</button>
+              </div>
+            );
+          }
+
+          const currentSection = quizState.sections[quizState.currentSectionIndex];
+          const currentQuestion = getCurrentQuestion();
+          if (!currentSection || !currentQuestion) return null;
+          const isLastSection = quizState.currentSectionIndex === quizState.sections.length - 1;
+
+          return (
+            <QuizContent
+              currentQuestion={currentQuestion}
+              currentQuestionIndex={quizState.currentQuestionIndex}
+              totalQuestions={currentSection.questions.length}
+              formatTimeRemaining={() => ""}
+              onOptionSelect={selectOption}
+              onNext={nextQuestion}
+              onPrevious={previousQuestion}
+              onSubmit={handleSubmitPrompt}
+              currentSectionTitle={currentSection.title || "Practice"}
+              currentSection={quizState.currentSectionIndex + 1}
+              totalSections={quizState.sections.length}
+              isLastSection={isLastSection}
+            />
+          );
+        }
 
         if (!userInfo) {
           return <QuizForm onSubmit={handleUserRegistration} loading={quizLoading} />;
         }
         
         if (quizLoading) {
-          return <div className="flex justify-center items-center py-10">
-            <div className="animate-pulse flex flex-col items-center">
-              <div className="h-12 w-12 rounded-full bg-quiz-red/30 mb-4"></div>
-              <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 w-32 bg-gray-200 rounded"></div>
-              <p className="mt-4 text-gray-600">Loading quiz data...</p>
+          return (
+            <div className="flex justify-center items-center py-10">
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="h-12 w-12 rounded-full bg-quiz-red/30 mb-4"></div>
+                <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
+                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                <p className="mt-4 text-gray-600">Loading quiz data...</p>
+              </div>
             </div>
-          </div>;
+          );
         }
         
         if (quizError) {

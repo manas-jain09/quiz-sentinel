@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import FullScreenAlert from '@/components/quiz/FullScreenAlert';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLocation, useNavigate } from "react-router-dom"; // for path and redirect
 
 interface QuizStateProviderProps {
   children: (state: QuizStateValues) => ReactNode;
@@ -32,9 +33,25 @@ interface QuizStateValues {
   setShowConfirmDialog: (show: boolean) => void;
   getCurrentQuestion: () => QuizQuestion | null;
   handleReturnHome: () => void;
+  mode?: "assessment" | "practice";
 }
 
 export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
+  // Add location, navigation
+  const location = typeof window !== "undefined"
+    ? window.location
+    : { search: "" };
+  const navigate = useNavigate();
+
+  // Parse query params for user id and quiz id
+  const query = new URLSearchParams(location.search);
+  const practiceUserId = query.get("userId") || "";
+  const practiceQuizId = query.get("quizId") || "";
+
+  // Track mode: "assessment" or "practice"
+  const [mode, setMode] = useState<"assessment" | "practice">("assessment");
+  const [practiceUserVerified, setPracticeUserVerified] = useState(false);
+
   const { quizData, quizLoading, quizError, fetchQuiz } = useQuizData();
   const { saveQuizResult } = useQuizResults();
   
@@ -127,7 +144,12 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
   };
 
   useEffect(() => {
-    if (quizState.isCompleted && userInfo && quizId) {
+    if (
+      quizState.isCompleted &&
+      userInfo &&
+      quizId &&
+      mode !== "practice"
+    ) {
       saveQuizResult(
         userInfo,
         quizId,
@@ -137,13 +159,33 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
         quizState.questions
       );
     }
-  }, [quizState.isCompleted, userInfo, quizId]);
+  }, [
+    quizState.isCompleted,
+    userInfo,
+    quizId,
+    saveQuizResult,
+    quizState.score,
+    quizState.questions,
+    quizState.isCheating,
+    mode
+  ]);
 
   useEffect(() => {
-    if (quizState.isStarted && !quizState.isCompleted && !isFullScreen) {
+    if (
+      quizState.isStarted &&
+      !quizState.isCompleted &&
+      !isFullScreen &&
+      mode !== "practice"
+    ) {
       requestFullScreen();
     }
-  }, [quizState.isStarted, quizState.isCompleted, isFullScreen, requestFullScreen]);
+  }, [
+    quizState.isStarted,
+    quizState.isCompleted,
+    isFullScreen,
+    requestFullScreen,
+    mode
+  ]);
 
   const handleSubmitPrompt = () => {
     setShowConfirmDialog(true);
@@ -174,6 +216,48 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     window.location.href = "https://quiz.arenahq-mitwpu.in/";
   };
 
+  // Practice mode check
+  useEffect(() => {
+    // "quizType" property must be present in quizData (or fallback to assessment if missing)
+    if (
+      practiceUserId &&
+      practiceQuizId &&
+      typeof practiceQuizId === "string"
+    ) {
+      setMode("practice");
+      // Verify user id before allowing start
+      (async () => {
+        const { data: user, error } = await supabase
+          .from("users")
+          .select("id")
+          .eq("id", practiceUserId)
+          .maybeSingle();
+        if (error || !user) {
+          window.location.href = "https://astra.ikshvaku-innovations.in";
+        } else {
+          setPracticeUserVerified(true);
+        }
+      })();
+    } else {
+      setMode("assessment");
+    }
+  }, [practiceUserId, practiceQuizId]);
+
+  // On practice mode, auto load quizData if not loaded
+  useEffect(() => {
+    if (
+      mode === "practice" &&
+      practiceUserVerified &&
+      !quizLoading &&
+      (!quizData.sections || quizData.sections.length === 0)
+    ) {
+      // Use fetchQuiz with quiz id (by code for compatibility)
+      fetchQuiz(practiceQuizId, "practice-user-dummyprn").catch(() => {
+        window.location.href = "https://astra.ikshvaku-innovations.in";
+      });
+    }
+  }, [mode, practiceQuizId, practiceUserVerified, fetchQuiz, quizData.sections, quizLoading]);
+
   const state: QuizStateValues = {
     quizData,
     quizLoading,
@@ -192,34 +276,39 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
     handleReturnToFullScreen,
     setShowConfirmDialog,
     getCurrentQuestion,
-    handleReturnHome
+    handleReturnHome,
+    // Add practice helpers:
+    mode
   };
 
+  // Do NOT render modals/timers/warnings in practice mode
   return (
     <>
-      {isWarningShown && (
+      {mode !== "practice" && isWarningShown && (
         <FullScreenAlert onReturn={handleReturnToFullScreen} />
       )}
-      
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Submit Quiz</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to submit your quiz? You won't be able to change your answers after submission.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelSubmit}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmSubmit}
-              className="bg-quiz-red hover:bg-quiz-red-light"
-            >
-              Submit
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
+      {mode !== "practice" && (
+        <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Submit Quiz</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to submit your quiz? You won't be able to change your answers after submission.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleCancelSubmit}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmSubmit}
+                className="bg-quiz-red hover:bg-quiz-red-light"
+              >
+                Submit
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       {children(state)}
     </>
