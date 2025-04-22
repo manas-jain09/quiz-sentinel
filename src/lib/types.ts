@@ -1,10 +1,11 @@
-
 export interface UserInfo {
   name: string;
   email: string;
   prn: string;
   division: string;
   quizCode: string;
+  year: string;
+  batch: string;
 }
 
 export interface QuizInstructions {

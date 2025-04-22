@@ -17,6 +17,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     name: '',
     email: '',
     prn: '',
+    division: '',
     year: '',
     batch: '',
     quizCode: ''
@@ -24,7 +25,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -112,41 +113,38 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
             />
           </div>
           
-              <div className="space-y-2">
-                <Label htmlFor="year">Year</Label>
-                <select
-                  id="year"
-                  name="year"
-                  placeholder="Your Year"
-                  value={formData.year}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                  disabled={isLoading || loading}
-                >
-                  <option value="">Select Year</option>
-                  <option value="First">First</option>
-                  <option value="Second">Second</option>
-                  <option value="Third">Third</option>
-                  <option value="Fourth">Fourth</option>
-                </select>
-
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="year">Year</Label>
+            <select
+              id="year"
+              name="year"
+              value={formData.year}
+              onChange={handleChange}
+              className="flex w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+              required
+              disabled={isLoading || loading}
+            >
+              <option value="">Select Year</option>
+              <option value="First">First</option>
+              <option value="Second">Second</option>
+              <option value="Third">Third</option>
+              <option value="Fourth">Fourth</option>
+            </select>
+          </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="batch">Batch</Label>
-                <Input
-                  id="batch"
-                  name="batch"
-                  placeholder="Your Batch(Ex: A1)"
-                  value={formData.batch}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                  disabled={isLoading || loading}
-                />
-            
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="batch">Batch</Label>
+            <Input
+              id="batch"
+              name="batch"
+              placeholder="Your Batch(Ex: A1)"
+              value={formData.batch}
+              onChange={handleChange}
+              className="input-field"
+              required
+              disabled={isLoading || loading}
+            />
+          </div>
           
           <div className="space-y-2">
             <Label htmlFor="quizCode">Quiz Code</Label>
@@ -171,7 +169,6 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
           </Button>
         </form>
       </CardContent>
-
     </Card>
   );
 };
