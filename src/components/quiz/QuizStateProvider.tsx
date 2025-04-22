@@ -1,4 +1,3 @@
-
 import { ReactNode, useEffect, useState } from 'react';
 import { QuizInstructions, QuizQuestion, UserInfo } from '@/lib/types';
 import { useQuiz } from '@/hooks/useQuiz';
@@ -17,11 +16,36 @@ interface QuizStateProviderProps {
 
 // Separate explicit type definition to avoid recursive type references
 interface QuizStateValues {
-  quizData: any;
+  quizData: {
+    instructions: QuizInstructions;
+    questions: QuizQuestion[];
+    sections: Array<{
+      id: string;
+      title: string;
+      questions: QuizQuestion[];
+    }>;
+  };
   quizLoading: boolean;
   quizError: string | null;
   userInfo: UserInfo | null;
-  quizState: any;
+  quizState: {
+    isStarted: boolean;
+    isCompleted: boolean;
+    currentQuestionIndex: number;
+    timeRemaining: number; // in seconds
+    questions: QuizQuestion[];
+    sections: Array<{
+      id: string;
+      title: string;
+      questions: QuizQuestion[];
+    }>;
+    currentSectionIndex: number;
+    score?: number;
+    isFullScreenExitWarningShown: boolean;
+    fullScreenExitCount: number;
+    fullScreenExitTime: number | null;
+    isCheating: boolean;
+  };
   isWarningShown: boolean;
   showConfirmDialog: boolean;
   handleUserRegistration: (userData: UserInfo) => Promise<void>;
