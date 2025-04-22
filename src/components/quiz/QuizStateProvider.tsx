@@ -133,7 +133,8 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
         quizId,
         quizState.score || 0,
         quizState.questions.length,
-        quizState.isCheating
+        quizState.isCheating,
+        quizState.questions
       );
     }
   }, [quizState.isCompleted, userInfo, quizId]);

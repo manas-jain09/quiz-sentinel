@@ -1,5 +1,5 @@
 
-import { UserInfo } from '@/lib/types';
+import { UserInfo, QuizQuestion } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -9,7 +9,8 @@ export const useQuizResults = () => {
     quizId: string | null,
     score: number,
     totalQuestions: number,
-    isCheating: boolean
+    isCheating: boolean,
+    questions: QuizQuestion[]
   ) => {
     if (!userInfo || !quizId) {
       console.error('Missing user info or quiz ID for saving results');
@@ -17,7 +18,8 @@ export const useQuizResults = () => {
     }
     
     try {
-      const { error } = await supabase
+      // First save the overall quiz result
+      const { data: resultData, error: resultError } = await supabase
         .from('student_results')
         .insert({
           name: userInfo.name,
@@ -29,14 +31,37 @@ export const useQuizResults = () => {
           marks_scored: score,
           total_marks: totalQuestions,
           cheating_status: isCheating ? 'caught-cheating' : 'no-issues'
-        });
+        })
+        .select('id')
+        .single();
         
-      if (error) {
-        console.error('Error saving quiz result:', error);
+      if (resultError) {
+        console.error('Error saving quiz result:', resultError);
         toast.error('Error saving your quiz result');
-      } else {
-        toast.success('Quiz completed successfully!');
+        return;
       }
+
+      // Then save individual answers
+      const studentAnswers = questions.map(question => ({
+        student_result_id: resultData.id,
+        question_id: question.id,
+        selected_option_id: question.selectedOptionId || null,
+        is_correct: question.selectedOptionId 
+          ? question.options.find(opt => opt.id === question.selectedOptionId)?.isCorrect || false
+          : null
+      }));
+
+      const { error: answersError } = await supabase
+        .from('student_answers')
+        .insert(studentAnswers);
+
+      if (answersError) {
+        console.error('Error saving answers:', answersError);
+        toast.error('Error saving your answers');
+        return;
+      }
+
+      toast.success('Quiz completed successfully!');
     } catch (error) {
       console.error('Error saving quiz result:', error);
       toast.error('Error saving your quiz result');
