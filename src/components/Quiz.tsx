@@ -5,7 +5,12 @@ import QuizResults from './QuizResults';
 import QuizContent from './quiz/QuizContent';
 import { QuizStateProvider } from './quiz/QuizStateProvider';
 
-const Quiz = () => {
+interface QuizProps {
+  userId?: string;
+  quizId?: string;
+}
+
+const Quiz = ({ userId, quizId }: QuizProps) => {
   return (
     <QuizStateProvider>
       {(state) => {
@@ -95,6 +100,29 @@ const Quiz = () => {
           );
         }
 
+        if (!userInfo && userId && quizId) {
+          const dummyUserInfo = {
+            name: "Practice User",
+            email: "practice@example.com",
+            prn: userId,
+            division: "Practice",
+            quizCode: quizId,
+            year: "2023",
+            batch: "Practice"
+          };
+          handleUserRegistration(dummyUserInfo);
+          return (
+            <div className="flex justify-center items-center py-10">
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="h-12 w-12 rounded-full bg-quiz-red/30 mb-4"></div>
+                <div className="h-4 w-48 bg-gray-200 rounded mb-2"></div>
+                <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                <p className="mt-4 text-gray-600">Loading quiz data...</p>
+              </div>
+            </div>
+          );
+        }
+        
         if (!userInfo) {
           return <QuizForm onSubmit={handleUserRegistration} loading={quizLoading} />;
         }
