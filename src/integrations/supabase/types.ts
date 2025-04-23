@@ -182,41 +182,6 @@ export type Database = {
           },
         ]
       }
-      student_answers: {
-        Row: {
-          created_at: string
-          id: string
-          is_correct: boolean | null
-          question_id: string
-          selected_option_id: string | null
-          student_result_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_correct?: boolean | null
-          question_id: string
-          selected_option_id?: string | null
-          student_result_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_correct?: boolean | null
-          question_id?: string
-          selected_option_id?: string | null
-          student_result_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_answers_student_result_id_fkey"
-            columns: ["student_result_id"]
-            isOneToOne: false
-            referencedRelation: "student_results"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       student_results: {
         Row: {
           batch: string | null
