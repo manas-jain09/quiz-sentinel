@@ -122,7 +122,6 @@ export type Database = {
           instructions: string | null
           start_date_time: string
           title: string
-          type: string | null
           updated_at: string
         }
         Insert: {
@@ -135,7 +134,6 @@ export type Database = {
           instructions?: string | null
           start_date_time: string
           title: string
-          type?: string | null
           updated_at?: string
         }
         Update: {
@@ -148,7 +146,6 @@ export type Database = {
           instructions?: string | null
           start_date_time?: string
           title?: string
-          type?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -269,24 +266,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      users: {
-        Row: {
-          created_at: string
-          name: string | null
-          userId: string
-        }
-        Insert: {
-          created_at?: string
-          name?: string | null
-          userId?: string
-        }
-        Update: {
-          created_at?: string
-          name?: string | null
-          userId?: string
-        }
-        Relationships: []
       }
     }
     Views: {
