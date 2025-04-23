@@ -122,6 +122,7 @@ export type Database = {
           instructions: string | null
           start_date_time: string
           title: string
+          type: string | null
           updated_at: string
         }
         Insert: {
@@ -134,6 +135,7 @@ export type Database = {
           instructions?: string | null
           start_date_time: string
           title: string
+          type?: string | null
           updated_at?: string
         }
         Update: {
@@ -146,6 +148,7 @@ export type Database = {
           instructions?: string | null
           start_date_time?: string
           title?: string
+          type?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -178,6 +181,66 @@ export type Database = {
             columns: ["quiz_id"]
             isOneToOne: false
             referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_answers: {
+        Row: {
+          correct_option_text: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          is_correct: boolean | null
+          prn: string
+          question_id: string
+          quizid: string | null
+          quizId: string | null
+          selected_option_id: string | null
+          selected_option_text: string | null
+          student_result_id: string
+        }
+        Insert: {
+          correct_option_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_correct?: boolean | null
+          prn?: string
+          question_id: string
+          quizid?: string | null
+          quizId?: string | null
+          selected_option_id?: string | null
+          selected_option_text?: string | null
+          student_result_id: string
+        }
+        Update: {
+          correct_option_text?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_correct?: boolean | null
+          prn?: string
+          question_id?: string
+          quizid?: string | null
+          quizId?: string | null
+          selected_option_id?: string | null
+          selected_option_text?: string | null
+          student_result_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_answers_student_result_id_fkey"
+            columns: ["student_result_id"]
+            isOneToOne: false
+            referencedRelation: "student_results"
             referencedColumns: ["id"]
           },
         ]
@@ -231,6 +294,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

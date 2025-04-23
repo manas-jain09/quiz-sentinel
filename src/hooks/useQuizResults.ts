@@ -2,6 +2,7 @@
 import { UserInfo } from '@/lib/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { QuizQuestion } from '@/lib/types';
 
 export const useQuizResults = () => {
   const saveQuizResult = async (
@@ -9,7 +10,8 @@ export const useQuizResults = () => {
     quizId: string | null,
     score: number,
     totalQuestions: number,
-    isCheating: boolean
+    isCheating: boolean,
+    questions: QuizQuestion[]
   ) => {
     if (!userInfo || !quizId) {
       console.error('Missing user info or quiz ID for saving results');
@@ -17,7 +19,8 @@ export const useQuizResults = () => {
     }
     
     try {
-      const { error } = await supabase
+      // First, save the overall quiz result
+      const { data: studentResultData, error: resultError } = await supabase
         .from('student_results')
         .insert({
           name: userInfo.name,
@@ -29,11 +32,38 @@ export const useQuizResults = () => {
           marks_scored: score,
           total_marks: totalQuestions,
           cheating_status: isCheating ? 'caught-cheating' : 'no-issues'
-        });
+        })
+        .select('id')
+        .single();
         
-      if (error) {
-        console.error('Error saving quiz result:', error);
+      if (resultError) {
+        console.error('Error saving quiz result:', resultError);
         toast.error('Error saving your quiz result');
+        return;
+      }
+      
+      // Now, save individual student answers
+      const studentAnswers = questions.map(question => ({
+        student_result_id: studentResultData.id,
+        question_id: question.id,
+        selected_option_id: question.selectedOptionId,
+        selected_option_text: question.selectedOptionId 
+          ? question.options.find(opt => opt.id === question.selectedOptionId)?.text 
+          : null,
+        is_correct: question.selectedOptionId 
+          ? question.options.find(opt => opt.id === question.selectedOptionId)?.isCorrect 
+          : null,
+        prn: userInfo.prn,
+        quizId: quizId
+      }));
+      
+      const { error: answersError } = await supabase
+        .from('student_answers')
+        .insert(studentAnswers);
+        
+      if (answersError) {
+        console.error('Error saving student answers:', answersError);
+        toast.error('Error saving your answer details');
       } else {
         toast.success('Quiz completed successfully!');
       }

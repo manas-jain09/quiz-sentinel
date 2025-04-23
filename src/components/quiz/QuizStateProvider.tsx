@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect, useState } from 'react';
 import { QuizInstructions, QuizQuestion, UserInfo } from '@/lib/types';
 import { useQuiz } from '@/hooks/useQuiz';
@@ -133,7 +134,8 @@ export const QuizStateProvider = ({ children }: QuizStateProviderProps) => {
         quizId,
         quizState.score || 0,
         quizState.questions.length,
-        quizState.isCheating
+        quizState.isCheating,
+        quizState.questions
       );
     }
   }, [quizState.isCompleted, userInfo, quizId]);
