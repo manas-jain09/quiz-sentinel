@@ -17,6 +17,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
     name: '',
     email: '',
     prn: '',
+    division: '',
     year: '',
     batch: '',
     quizCode: ''
@@ -24,7 +25,7 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -117,10 +118,9 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                 <select
                   id="year"
                   name="year"
-                  placeholder="Your Year"
                   value={formData.year}
                   onChange={handleChange}
-                  className="input-field"
+                  className="input-field w-full px-4 py-2 border rounded"
                   required
                   disabled={isLoading || loading}
                 >
@@ -130,7 +130,6 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                   <option value="Third">Third</option>
                   <option value="Fourth">Fourth</option>
                 </select>
-
               </div>
               
               <div className="space-y-2">
@@ -145,7 +144,6 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
                   required
                   disabled={isLoading || loading}
                 />
-            
               </div>
           
           <div className="space-y-2">
@@ -171,7 +169,6 @@ const QuizForm = ({ onSubmit, loading = false }: QuizFormProps) => {
           </Button>
         </form>
       </CardContent>
-
     </Card>
   );
 };

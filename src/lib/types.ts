@@ -4,6 +4,8 @@ export interface UserInfo {
   email: string;
   prn: string;
   division: string;
+  year: string;
+  batch: string;
   quizCode: string;
 }
 
